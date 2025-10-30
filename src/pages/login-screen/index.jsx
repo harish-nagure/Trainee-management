@@ -5,7 +5,7 @@ import Select from '../../components/ui/Select';
 import Button from '../../components/ui/Button';
 import Checkbox from '../../components/ui/Checkbox';
 import { Eye, EyeOff, Shield, AlertCircle, Lock, User, Mail } from 'lucide-react';
-
+import { login } from '../../api_service';
 
 const LoginScreen = () => {
   const navigate = useNavigate();
@@ -33,19 +33,19 @@ const LoginScreen = () => {
   ];
   
   // Mock user data for demonstration
-  const mockUsers = {
-    manager: {
-      email: 'admin@traineesystem.com',
-      password: 'Manager123!',
-      redirectPath: '/manager-dashboard'
-    },
-    trainee: {
-      email: 'john.doe@company.com',
-      traineeId: 'TRN001',
-      password: 'Trainee123!',
-      redirectPath: '/trainee-dashboard'
-    }
-  };
+  // const mockUsers = {
+  //   manager: {
+  //     email: 'admin@traineesystem.com',
+  //     password: 'Manager123!',
+  //     redirectPath: '/manager-dashboard'
+  //   },
+  //   trainee: {
+  //     email: 'john.doe@company.com',
+  //     traineeId: 'TRN001',
+  //     password: 'Trainee123!',
+  //     redirectPath: '/trainee-dashboard'
+  //   }
+  // };
   
   // Account lockout timer
   useEffect(() => {
@@ -126,32 +126,36 @@ const LoginScreen = () => {
     
     try {
       // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Mock authentication logic
-      const mockUser = mockUsers?.[formData?.role];
+      // const mockUser = mockUsers?.[formData?.role];
+      console.log('Creating account with data:', formData);
+
+      const response = await login(formData);
+      console.log('Login response:', response);
       
-      const isValidCredentials = 
-        formData?.email === mockUser?.email &&
-        formData?.password === mockUser?.password &&
-        (formData?.role !== 'trainee' || formData?.traineeId === mockUsers?.trainee?.traineeId);
+
+      const isValidCredentials = response?.status === 200;
+        
       
       if (isValidCredentials) {
         // Successful login
         setFailedAttempts(0);
-        
-        // Store user session (in real app, handle JWT tokens)
+  
         if (formData?.rememberMe) {
           localStorage.setItem('userSession', JSON.stringify({
             role: formData?.role,
             email: formData?.email,
             traineeId: formData?.traineeId,
             timestamp: Date.now()
-          }));
+          }));          
         }
         
         // Redirect to appropriate dashboard
-        navigate(mockUser?.redirectPath);
+
+
+        navigate(response?.redirect || '/');
       } else {
         // Failed login
         const newFailedAttempts = failedAttempts + 1;
@@ -169,6 +173,8 @@ const LoginScreen = () => {
           });
         }
       }
+
+
     } catch (error) {
       setErrors({
         general: 'Connection error. Please check your internet connection and try again.'
@@ -340,7 +346,7 @@ const LoginScreen = () => {
             </form>
             
             {/* Demo Credentials */}
-            <div className="mt-8 pt-6 border-t border-border">
+            {/* <div className="mt-8 pt-6 border-t border-border">
               <h3 className="text-sm font-medium text-muted-foreground mb-3 text-center">
                 Demo Credentials
               </h3>
@@ -357,7 +363,7 @@ const LoginScreen = () => {
                   <p className="text-muted-foreground">Password: Trainee123!</p>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
           
           {/* Security Footer */}
