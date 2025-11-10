@@ -1,86 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import Icon from '../../../components/AppIcon';
-import Button from '../../../components/ui/Button';
-import Input from '../../../components/ui/Input';
-import Select from '../../../components/ui/Select';
+import React, { useState, useEffect } from "react";
+import Icon from "../../../components/AppIcon";
+import Button from "../../../components/ui/Button";
+import Input from "../../../components/ui/Input";
+import Select from "../../../components/ui/Select";
+import { fetchAllTrainees } from "../../../api_service";
 
-const SchedulingForm = ({ 
-  selectedDate, 
-  selectedTime, 
-  selectedTrainees, 
+
+const SchedulingForm = ({
+  selectedDate,
+  selectedTime,
+  selectedTrainees,
   interviewers,
-  onSchedule, 
+  onSchedule,
   onCancel,
   conflicts = [],
-  className = '' 
+  className = "",
 }) => {
   const [formData, setFormData] = useState({
-    interviewer: '',
-    interviewType: '',
-    location: '',
-    meetingLink: '',
-    duration: '60',
-    notes: '',
-    emailTemplate: 'default'
+    interviewer: "",
+    interviewType: "",
+    location: "",
+    meetingLink: "",
+    duration: "60",
+    notes: "",
+    emailTemplate: "default",
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [trainerList, setTrainerList] = useState([]);
 
+  // ✅ Fetch trainers dynamically (optional)
+  useEffect(() => {
+    const fetchTrainers = async () => {
+      try {
+        const res = await fetchAllTrainees();
+        setTrainerList(res || []);
+      } catch (err) {
+        console.error("Error loading trainers:", err);
+      }
+    };
+    fetchTrainers();
+  }, []);
+
+  // Options
   const interviewTypeOptions = [
-    { value: 'technical', label: 'Technical Interview' },
-    { value: 'behavioral', label: 'Behavioral Interview' },
-    { value: 'progress', label: 'Progress Review' },
-    { value: 'final', label: 'Final Assessment' }
+    { value: "technical", label: "Technical Interview" },
+    { value: "behavioral", label: "Behavioral Interview" },
+    { value: "progress", label: "Progress Review" },
+    { value: "final", label: "Final Assessment" },
   ];
 
   const durationOptions = [
-    { value: '30', label: '30 minutes' },
-    { value: '45', label: '45 minutes' },
-    { value: '60', label: '1 hour' },
-    { value: '90', label: '1.5 hours' },
-    { value: '120', label: '2 hours' }
+    { value: "30", label: "30 minutes" },
+    { value: "45", label: "45 minutes" },
+    { value: "60", label: "1 hour" },
+    { value: "90", label: "1.5 hours" },
+    { value: "120", label: "2 hours" },
   ];
 
   const emailTemplateOptions = [
-    { value: 'default', label: 'Default Template' },
-    { value: 'technical', label: 'Technical Interview Template' },
-    { value: 'behavioral', label: 'Behavioral Interview Template' },
-    { value: 'progress', label: 'Progress Review Template' }
+    { value: "default", label: "Default Template" },
+    { value: "technical", label: "Technical Interview Template" },
+    { value: "behavioral", label: "Behavioral Interview Template" },
+    { value: "progress", label: "Progress Review Template" },
   ];
 
-  const interviewerOptions = interviewers?.map(interviewer => ({
-    value: interviewer?.id,
-    label: `${interviewer?.name} - ${interviewer?.title}`,
-    description: `Available: ${interviewer?.availability}`
-  }));
+  // ✅ Build interviewer dropdown options
+  const interviewerOptions = Array.isArray(interviewers || trainerList)
+    ? (interviewers || trainerList).map((t) => ({
+        value: t.trainerId || t.empid,
+        label: `${t.name}${t.title ? " - " + t.title : ""}`,
+      }))
+    : [];
 
   useEffect(() => {
-    // Reset form when selection changes
+    // Reset errors when new selection occurs
     setErrors({});
   }, [selectedDate, selectedTime, selectedTrainees]);
-
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData?.interviewer) {
-      newErrors.interviewer = 'Please select an interviewer';
-    }
-
-    if (!formData?.interviewType) {
-      newErrors.interviewType = 'Please select interview type';
-    }
-
-    if (!formData?.location && !formData?.meetingLink) {
-      newErrors.location = 'Please provide either location or meeting link';
-    }
-
-    if (formData?.meetingLink && !isValidUrl(formData?.meetingLink)) {
-      newErrors.meetingLink = 'Please provide a valid meeting link';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors)?.length === 0;
-  };
 
   const isValidUrl = (string) => {
     try {
@@ -91,40 +87,59 @@ const SchedulingForm = ({
     }
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.interviewer) {
+      newErrors.interviewer = "Please select an interviewer";
+    }
+    if (!formData.interviewType) {
+      newErrors.interviewType = "Please select interview type";
+    }
+    if (!formData.location && !formData.meetingLink) {
+      newErrors.location = "Provide either location or meeting link";
+    }
+    if (formData.meetingLink && !isValidUrl(formData.meetingLink)) {
+      newErrors.meetingLink = "Provide a valid meeting link";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
-    // Clear error when user starts typing
-    if (errors?.[field]) {
-      setErrors(prev => ({
+
+    // clear error as user types
+    if (errors[field]) {
+      setErrors((prev) => ({
         ...prev,
-        [field]: ''
+        [field]: "",
       }));
     }
   };
 
   const handleSubmit = async (e) => {
     e?.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setIsSubmitting(true);
-    
     try {
       const scheduleData = {
         date: selectedDate,
         time: selectedTime,
         trainees: selectedTrainees,
         ...formData,
-        duration: parseInt(formData?.duration)
+        duration: parseInt(formData.duration),
       };
-      
+
       await onSchedule(scheduleData);
     } catch (error) {
-      console.error('Scheduling error:', error);
+      console.error("Scheduling error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -132,26 +147,29 @@ const SchedulingForm = ({
 
   const getConflictWarning = () => {
     if (!selectedDate || !selectedTime) return null;
-    
+
     const dateStr = selectedDate?.toDateString();
-    const conflict = conflicts?.find(c => 
-      new Date(c.date)?.toDateString() === dateStr && c?.time === selectedTime
+    const conflict = conflicts?.find(
+      (c) =>
+        new Date(c.date)?.toDateString() === dateStr && c?.time === selectedTime
     );
-    
+
     if (conflict) {
       return (
-        <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg mb-4">
+        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
           <div className="flex items-start space-x-2">
-            <Icon name="AlertTriangle" size={16} className="text-warning mt-0.5" />
+            <Icon name="AlertTriangle" size={16} className="text-yellow-600 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-warning">Scheduling Conflict Detected</p>
-              <p className="text-xs text-warning/80 mt-1">{conflict?.reason}</p>
+              <p className="text-sm font-medium text-yellow-700">
+                Scheduling Conflict Detected
+              </p>
+              <p className="text-xs text-yellow-600 mt-1">{conflict?.reason}</p>
             </div>
           </div>
         </div>
       );
     }
-    
+
     return null;
   };
 
@@ -159,8 +177,14 @@ const SchedulingForm = ({
     return (
       <div className={`bg-card rounded-lg border border-border p-6 ${className}`}>
         <div className="text-center">
-          <Icon name="Calendar" size={48} className="text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-foreground mb-2">Schedule Interview</h3>
+          <Icon
+            name="Calendar"
+            size={48}
+            className="text-muted-foreground mx-auto mb-4"
+          />
+          <h3 className="text-lg font-medium text-foreground mb-2">
+            Schedule Interview
+          </h3>
           <p className="text-muted-foreground">
             Select a date, time slot, and trainees to begin scheduling
           </p>
@@ -172,54 +196,58 @@ const SchedulingForm = ({
   return (
     <div className={`bg-card rounded-lg border border-border ${className}`}>
       <div className="p-6 border-b border-border">
-        <h3 className="text-lg font-semibold text-foreground">Schedule Interview</h3>
+        <h3 className="text-lg font-semibold text-foreground">
+          Schedule Interview
+        </h3>
         <p className="text-sm text-muted-foreground mt-1">
-          {selectedDate?.toLocaleDateString()} at {selectedTime} • {selectedTrainees?.length} trainee{selectedTrainees?.length > 1 ? 's' : ''}
+          {selectedDate?.toLocaleDateString()} at {selectedTime} •{" "}
+          {selectedTrainees?.length} trainee
+          {selectedTrainees?.length > 1 ? "s" : ""}
         </p>
       </div>
+
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
         {getConflictWarning()}
 
-        {/* Interviewer Selection */}
+        {/* Interviewer */}
         <Select
           label="Select Interviewer"
-          description="Choose the interviewer for this session"
           required
           options={interviewerOptions}
-          value={formData?.interviewer}
-          onChange={(value) => handleInputChange('interviewer', value)}
-          error={errors?.interviewer}
+          value={formData.interviewer}
+          onChange={(value) => handleInputChange("interviewer", value)}
+          error={errors.interviewer}
           searchable
         />
 
-        {/* Interview Type and Duration */}
+        {/* Type + Duration */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Select
             label="Interview Type"
             required
             options={interviewTypeOptions}
-            value={formData?.interviewType}
-            onChange={(value) => handleInputChange('interviewType', value)}
-            error={errors?.interviewType}
+            value={formData.interviewType}
+            onChange={(value) => handleInputChange("interviewType", value)}
+            error={errors.interviewType}
           />
 
           <Select
             label="Duration"
             options={durationOptions}
-            value={formData?.duration}
-            onChange={(value) => handleInputChange('duration', value)}
+            value={formData.duration}
+            onChange={(value) => handleInputChange("duration", value)}
           />
         </div>
 
-        {/* Location and Meeting Link */}
+        {/* Location + Meeting Link */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Location"
             type="text"
             placeholder="Conference Room A, Building 1"
-            value={formData?.location}
-            onChange={(e) => handleInputChange('location', e?.target?.value)}
-            error={errors?.location}
+            value={formData.location}
+            onChange={(e) => handleInputChange("location", e.target.value)}
+            error={errors.location}
             description="Physical meeting location"
           />
 
@@ -227,9 +255,9 @@ const SchedulingForm = ({
             label="Meeting Link"
             type="url"
             placeholder="https://meet.google.com/abc-defg-hij"
-            value={formData?.meetingLink}
-            onChange={(e) => handleInputChange('meetingLink', e?.target?.value)}
-            error={errors?.meetingLink}
+            value={formData.meetingLink}
+            onChange={(e) => handleInputChange("meetingLink", e.target.value)}
+            error={errors.meetingLink}
             description="Virtual meeting link"
           />
         </div>
@@ -241,10 +269,10 @@ const SchedulingForm = ({
           </label>
           <textarea
             rows={3}
-            className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+            className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
             placeholder="Additional notes or preparation instructions..."
-            value={formData?.notes}
-            onChange={(e) => handleInputChange('notes', e?.target?.value)}
+            value={formData.notes}
+            onChange={(e) => handleInputChange("notes", e.target.value)}
           />
         </div>
 
@@ -253,11 +281,11 @@ const SchedulingForm = ({
           label="Email Template"
           description="Template for interview notification emails"
           options={emailTemplateOptions}
-          value={formData?.emailTemplate}
-          onChange={(value) => handleInputChange('emailTemplate', value)}
+          value={formData.emailTemplate}
+          onChange={(value) => handleInputChange("emailTemplate", value)}
         />
 
-        {/* Action Buttons */}
+        {/* Actions */}
         <div className="flex items-center justify-end space-x-3 pt-4 border-t border-border">
           <Button
             type="button"
@@ -267,7 +295,7 @@ const SchedulingForm = ({
           >
             Cancel
           </Button>
-          
+
           <Button
             type="submit"
             variant="default"
@@ -275,7 +303,9 @@ const SchedulingForm = ({
             iconName="Calendar"
             iconPosition="left"
           >
-            {selectedTrainees?.length > 1 ? 'Schedule Interviews' : 'Schedule Interview'}
+            {selectedTrainees?.length > 1
+              ? "Schedule Interviews"
+              : "Schedule Interview"}
           </Button>
         </div>
       </form>

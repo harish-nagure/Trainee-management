@@ -26,11 +26,11 @@ const ProgressReports = () => {
 
   // Mock authentication check
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
+    // const token = localStorage.getItem('authToken');
+    // if (!token) {
+    //   navigate('/login');
+    //   return;
+    // }
 
     // Mock user data - in real app, this would come from token/API
     const userData = {

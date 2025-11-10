@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import NavigationBreadcrumb from '../../components/ui/NavigationBreadcrumb';
@@ -9,6 +9,7 @@ import AssessmentHistory from './components/AssessmentHistory';
 import AssessmentDetailsModal from './components/AssessmentDetailsModal';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import { fetchAllTrainees,fetchAssessmentsByTrainee } from '../../api_service';
 
 const AssessmentEntry = () => {
   const navigate = useNavigate();
@@ -17,138 +18,180 @@ const AssessmentEntry = () => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [selectedAssessment, setSelectedAssessment] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-
+  const [historyAssessments, setHistoryAssessments] = useState([]);
   // Mock data for trainees
-  const mockTrainees = [
-    {
-      id: "TRN001",
-      name: "Sarah Johnson",
-      employeeId: "EMP2024001",
-      currentStep: 3,
-      status: "active",
-      lastAssessment: "Oct 15, 2024",
-      email: "sarah.johnson@company.com",
-      joinDate: "2024-09-01"
-    },
-    {
-      id: "TRN002", 
-      name: "Michael Chen",
-      employeeId: "EMP2024002",
-      currentStep: 2,
-      status: "active",
-      lastAssessment: "Oct 12, 2024",
-      email: "michael.chen@company.com",
-      joinDate: "2024-09-15"
-    },
-    {
-      id: "TRN003",
-      name: "Emily Rodriguez",
-      employeeId: "EMP2024003", 
-      currentStep: 4,
-      status: "pending",
-      lastAssessment: "Oct 10, 2024",
-      email: "emily.rodriguez@company.com",
-      joinDate: "2024-08-20"
-    },
-    {
-      id: "TRN004",
-      name: "David Kim",
-      employeeId: "EMP2024004",
-      currentStep: 5,
-      status: "completed",
-      lastAssessment: "Oct 18, 2024",
-      email: "david.kim@company.com",
-      joinDate: "2024-08-01"
-    },
-    {
-      id: "TRN005",
-      name: "Lisa Thompson",
-      employeeId: "EMP2024005",
-      currentStep: 1,
-      status: "active",
-      lastAssessment: "Never",
-      email: "lisa.thompson@company.com",
-      joinDate: "2024-10-01"
-    }
-  ];
+  const [trainees, setTrainees] = useState([]);
+
+  // const mockTrainees = [
+  //   {
+  //     id: "TRN001",
+  //     name: "Sarah Johnson",
+  //     employeeId: "EMP2024001",
+  //     currentStep: 3,
+  //     status: "active",
+  //     lastAssessment: "Oct 15, 2024",
+  //     email: "sarah.johnson@company.com",
+  //     joinDate: "2024-09-01"
+  //   },
+  //   {
+  //     id: "TRN002", 
+  //     name: "Michael Chen",
+  //     employeeId: "EMP2024002",
+  //     currentStep: 2,
+  //     status: "active",
+  //     lastAssessment: "Oct 12, 2024",
+  //     email: "michael.chen@company.com",
+  //     joinDate: "2024-09-15"
+  //   },
+  //   {
+  //     id: "TRN003",
+  //     name: "Emily Rodriguez",
+  //     employeeId: "EMP2024003", 
+  //     currentStep: 4,
+  //     status: "pending",
+  //     lastAssessment: "Oct 10, 2024",
+  //     email: "emily.rodriguez@company.com",
+  //     joinDate: "2024-08-20"
+  //   },
+  //   {
+  //     id: "TRN004",
+  //     name: "David Kim",
+  //     employeeId: "EMP2024004",
+  //     currentStep: 5,
+  //     status: "completed",
+  //     lastAssessment: "Oct 18, 2024",
+  //     email: "david.kim@company.com",
+  //     joinDate: "2024-08-01"
+  //   },
+  //   {
+  //     id: "TRN005",
+  //     name: "Lisa Thompson",
+  //     employeeId: "EMP2024005",
+  //     currentStep: 1,
+  //     status: "active",
+  //     lastAssessment: "Never",
+  //     email: "lisa.thompson@company.com",
+  //     joinDate: "2024-10-01"
+  //   }
+  // ];
 
   // Mock assessment history data
-  const mockAssessments = {
-    "TRN001": [
-      {
-        id: "ASS001",
-        traineeId: "TRN001",
-        date: "2024-10-15",
-        type: "weekly",
-        marks: 85,
-        maxMarks: 100,
-        percentage: 85,
-        remarks: "Good understanding of core concepts. Shows improvement in practical applications. Needs to work on time management during assessments.",
-        strengths: "Strong analytical thinking and problem-solving skills. Good communication during presentations.",
-        improvements: "Time management and attention to detail in documentation.",
-        recommendations: "Practice more coding exercises and focus on code optimization techniques.",
-        isDraft: false,
-        submittedAt: "2024-10-15T14:30:00Z",
-        currentStep: 3
-      },
-      {
-        id: "ASS002",
-        traineeId: "TRN001", 
-        date: "2024-10-08",
-        type: "weekly",
-        marks: 78,
-        maxMarks: 100,
-        percentage: 78,
-        remarks: "Satisfactory performance with room for improvement. Understanding of basic concepts is solid.",
-        strengths: "Good theoretical knowledge and willingness to learn.",
-        improvements: "Practical implementation and debugging skills.",
-        recommendations: "More hands-on practice with real-world scenarios.",
-        isDraft: false,
-        submittedAt: "2024-10-08T16:45:00Z",
-        currentStep: 2
+  // const mockAssessments = {
+  //   "TRN001": [
+  //         {
+  //           id: "ASS001",
+  //           traineeId: "TRN001",
+  //           date: "2024-10-15",
+  //           type: "weekly",
+  //           marks: 85,
+  //           maxMarks: 100,
+  //           percentage: 85,
+  //           remarks: "Good understanding of core concepts. Shows improvement in practical applications. Needs to work on time management during assessments.",
+  //           strengths: "Strong analytical thinking and problem-solving skills. Good communication during presentations.",
+  //           improvements: "Time management and attention to detail in documentation.",
+  //           recommendations: "Practice more coding exercises and focus on code optimization techniques.",
+            
+  //           isDraft: false,
+  //           submittedAt: "2024-10-15T14:30:00Z",
+  //           currentStep: 3
+
+  //         },
+  //     {
+  //       id: "ASS002",
+  //       traineeId: "TRN001", 
+  //       date: "2024-10-08",
+  //       type: "weekly",
+  //       marks: 78,
+  //       maxMarks: 100,
+  //       percentage: 78,
+  //       remarks: "Satisfactory performance with room for improvement. Understanding of basic concepts is solid.",
+  //       strengths: "Good theoretical knowledge and willingness to learn.",
+  //       improvements: "Practical implementation and debugging skills.",
+  //       recommendations: "More hands-on practice with real-world scenarios.",
+  //       isDraft: false,
+  //       submittedAt: "2024-10-08T16:45:00Z",
+  //       currentStep: 2
+  //     }
+  //   ],
+  //   "TRN002": [
+  //     {
+  //       id: "ASS003",
+  //       traineeId: "TRN002",
+  //       date: "2024-10-12",
+  //       type: "weekly", 
+  //       marks: 92,
+  //       maxMarks: 100,
+  //       percentage: 92,
+  //       remarks: "Excellent performance across all areas. Demonstrates strong technical skills and leadership potential.",
+  //       strengths: "Outstanding technical skills, great team collaboration, and innovative thinking.",
+  //       improvements: "Could benefit from more exposure to advanced topics.",
+  //       recommendations: "Consider mentoring junior trainees and taking on more challenging projects.",
+  //       isDraft: false,
+  //       submittedAt: "2024-10-12T11:20:00Z",
+  //       currentStep: 2
+  //     }
+  //   ],
+  //   "TRN003": [
+  //     {
+  //       id: "ASS004",
+  //       traineeId: "TRN003",
+  //       date: "2024-10-10",
+  //       type: "milestone",
+  //       marks: 88,
+  //       maxMarks: 100,
+  //       percentage: 88,
+  //       remarks: "Strong milestone performance. Ready to progress to next level with continued support.",
+  //       strengths: "Excellent project management skills and attention to detail.",
+  //       improvements: "Technical depth in specialized areas.",
+  //       recommendations: "Focus on advanced technical certifications and specialized training.",
+  //       isDraft: false,
+  //       submittedAt: "2024-10-10T13:15:00Z",
+  //       currentStep: 4
+  //     }
+  //   ]
+  // };
+
+
+  useEffect(() => {
+    // Fetch initial data if needed
+    const fetchData = async () => {
+      try {
+        const trainees = await fetchAllTrainees();
+        setTrainees(trainees.data);
+        console.log('Fetched trainees:', trainees.data);
+
+      } catch (error) {
+        console.error("Error fetching trainees:", error);
       }
-    ],
-    "TRN002": [
-      {
-        id: "ASS003",
-        traineeId: "TRN002",
-        date: "2024-10-12",
-        type: "weekly", 
-        marks: 92,
-        maxMarks: 100,
-        percentage: 92,
-        remarks: "Excellent performance across all areas. Demonstrates strong technical skills and leadership potential.",
-        strengths: "Outstanding technical skills, great team collaboration, and innovative thinking.",
-        improvements: "Could benefit from more exposure to advanced topics.",
-        recommendations: "Consider mentoring junior trainees and taking on more challenging projects.",
-        isDraft: false,
-        submittedAt: "2024-10-12T11:20:00Z",
-        currentStep: 2
-      }
-    ],
-    "TRN003": [
-      {
-        id: "ASS004",
-        traineeId: "TRN003",
-        date: "2024-10-10",
-        type: "milestone",
-        marks: 88,
-        maxMarks: 100,
-        percentage: 88,
-        remarks: "Strong milestone performance. Ready to progress to next level with continued support.",
-        strengths: "Excellent project management skills and attention to detail.",
-        improvements: "Technical depth in specialized areas.",
-        recommendations: "Focus on advanced technical certifications and specialized training.",
-        isDraft: false,
-        submittedAt: "2024-10-10T13:15:00Z",
-        currentStep: 4
-      }
-    ]
+    };
+    fetchData();
+  }, []);
+
+
+
+  const handleTraineeSelect = async (trainee) => {
+    console.log('Selected trainee:', trainee);
+     try {
+        const trainees = await fetchAllTrainees();
+        setTrainees(trainees.data);
+        console.log('Fetched trainees:', trainees.data);
+
+      } catch (error) {
+        console.error("Error fetching trainees:", error);
+      } 
+      
+    setSelectedTrainee(trainee);
+      try {
+    const data = await getTraineeAssessments(trainee?.empid);
+    setHistoryAssessments(data);
+  } catch (error) {
+    console.error("Error fetching assessments:", error);
+    setHistoryAssessments([]);
+  }
+
+
   };
 
-  const handleTraineeSelect = (trainee) => {
-    setSelectedTrainee(trainee);
-  };
 
   const handleSaveAssessment = async (assessmentData) => {
     setIsLoading(true);
@@ -204,8 +247,34 @@ const AssessmentEntry = () => {
     navigate('/');
   };
 
-  const getTraineeAssessments = (traineeId) => {
-    return mockAssessments?.[traineeId] || [];
+  const getTraineeAssessments = async (traineeId) => {
+    try{
+      // In real implementation, fetch assessments from API
+      const response = await fetchAssessmentsByTrainee(traineeId);
+      console.log('Fetched assessments for trainee:', response);
+
+      const normalized = (response.data ?? []).map(a => ({
+      assessmentId: a.assessmentId,
+      date: a.assessmentDate ?? null,
+      type: a.assessmentType ?? '',
+      marks: Number(a.marks ?? 0),
+      maxMarks: Number(a.maxMarks ?? 0),
+      percentage: Number(a.percentage ?? 0),
+      remarks: a.remarks ?? '',
+      strengths: a.strengths ?? '',
+      improvements: a.improvements ?? '',
+      recommendations: a.recommendations ?? '',
+      isDraft: a.currentStep !== 4,
+      submittedAt: a.submittedAt,
+      currentStep: a.currentStep,
+      user: a.user
+    }));
+    console.log('Normalized assessments:', normalized);
+      return normalized || [];
+    }catch(err){
+      console.error("Error fetching assessments for trainee:", err);
+    }
+    // return mockAssessments?.[traineeId] || [];
   };
 
   return (
@@ -263,7 +332,7 @@ const AssessmentEntry = () => {
               <TraineeSelector
                 selectedTrainee={selectedTrainee}
                 onTraineeSelect={handleTraineeSelect}
-                trainees={mockTrainees}
+                trainees={trainees.length ? trainees : []}
               />
             </div>
 
@@ -282,7 +351,7 @@ const AssessmentEntry = () => {
               {selectedTrainee && (
                 <AssessmentHistory
                   trainee={selectedTrainee}
-                  assessments={getTraineeAssessments(selectedTrainee?.id)}
+                  assessments={historyAssessments}
                   onViewDetails={handleViewAssessmentDetails}
                 />
               )}

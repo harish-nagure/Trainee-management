@@ -3,6 +3,8 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
+import {createAssessment} from '../../../api_service'
+import { fromTheme } from 'tailwind-merge';
 
 const AssessmentForm = ({ 
   trainee, 
@@ -48,7 +50,7 @@ const AssessmentForm = ({
     if (trainee && formData?.marks) {
       const draftData = {
         ...formData,
-        traineeId: trainee?.id,
+        empid: trainee?.empid,
         isDraft: true,
         autoSaved: true
       };
@@ -107,20 +109,35 @@ const AssessmentForm = ({
     return Object.keys(newErrors)?.length === 0;
   };
 
-  const handleSubmit = (isDraft = false) => {
+  const handleSubmit = async (isDraft = false) => {
     if (!isDraft && !validateForm()) {
       return;
     }
 
+    
+    
+
+
+
     const assessmentData = {
       ...formData,
-      traineeId: trainee?.id,
+      empid: trainee?.empid,
       traineeName: trainee?.name,
       currentStep: trainee?.currentStep,
-      isDraft,
+      // isDraft,
       submittedAt: new Date()?.toISOString(),
       percentage: Math.round((parseFloat(formData?.marks) / parseFloat(formData?.maxMarks)) * 100)
     };
+
+    try{
+      // setIsLoading(true);
+      console.log('Submitting assessment data:', assessmentData);
+      const response = await createAssessment(assessmentData.empid, assessmentData);
+      console.log('Assessment saved successfully:', response);
+      // setIsLoading(false);
+    } catch (error) {
+      console.error('Error submitting assessment:', error);
+    }
 
     if (isDraft) {
       onSaveDraft(assessmentData);
@@ -175,7 +192,7 @@ const AssessmentForm = ({
           <div>
             <h2 className="text-lg font-semibold text-foreground">Assessment Entry</h2>
             <p className="text-sm text-muted-foreground">
-              Assessing: {trainee?.name} (Step {trainee?.currentStep})
+              Assessing: {trainee?.username} (Step {trainee?.currentStep})
             </p>
           </div>
           <div className="flex items-center space-x-2">

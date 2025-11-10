@@ -11,6 +11,12 @@ import InterviewStatusTracker from './components/InterviewStatusTracker';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 
+// import { } from "../../Api/apiAuth";
+
+import {createSchedule, assignTrainees, fetchAllTrainees, fetchAllTraineeSummary } from "../../api_service";
+// import { getAllTrainers, getAllTrainees } from "../../Api/apiAuth";
+
+
 const InterviewScheduling = () => {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(null);
@@ -19,8 +25,11 @@ const InterviewScheduling = () => {
   const [activeView, setActiveView] = useState('calendar');
   const [conflicts, setConflicts] = useState([]);
   const [showNotificationPreview, setShowNotificationPreview] = useState(false);
+  const [trainers, setTrainers] = useState([]);
+  const [trainees, setTrainees] = useState([]);
 
-  // Mock data
+
+
   const mockTrainees = [
     {
       id: 1,
@@ -180,19 +189,19 @@ const InterviewScheduling = () => {
   };
 
   // Handle trainee selection
-  const handleTraineeSelect = (traineeId) => {
+  const handleTraineeSelect = (empid) => {
     setSelectedTrainees(prev => {
-      if (prev?.includes(traineeId)) {
-        return prev?.filter(id => id !== traineeId);
+      if (prev?.includes(empid)) {
+        return prev?.filter(id => id !== empid);
       } else {
-        return [...prev, traineeId];
+        return [...prev, empid];
       }
     });
   };
 
   // Handle bulk trainee selection
-  const handleBulkTraineeSelect = (traineeIds) => {
-    setSelectedTrainees(traineeIds);
+  const handleBulkTraineeSelect = (empids) => {
+    setSelectedTrainees(empids);
   };
 
   // Check for scheduling conflicts
@@ -213,33 +222,69 @@ const InterviewScheduling = () => {
   };
 
   // Handle interview scheduling
-  const handleScheduleInterview = async (scheduleData) => {
+  // const handleScheduleInterview = async (scheduleData) => {
+  //   try {
+  //     console.log('Scheduling interview:', scheduleData);
+
+  //     // Simulate API call
+  //     await new Promise(resolve => setTimeout(resolve, 1000));
+
+  //     // Show notification preview
+  //     setShowNotificationPreview(true);
+
+  //     // Reset form
+  //     setSelectedDate(null);
+  //     setSelectedTime(null);
+  //     setSelectedTrainees([]);
+  //     setConflicts([]);
+
+  //     alert('Interview scheduled successfully!');
+  //   } catch (error) {
+  //     console.error('Scheduling error:', error);
+  //     alert('Failed to schedule interview. Please try again.');
+  //   }
+  // };
+
+  const handleSchedule = async (scheduleData) => {
     try {
-      console.log('Scheduling interview:', scheduleData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Show notification preview
-      setShowNotificationPreview(true);
-      
-      // Reset form
-      setSelectedDate(null);
-      setSelectedTime(null);
-      setSelectedTrainees([]);
-      setConflicts([]);
-      
-      alert('Interview scheduled successfully!');
+      // 1️⃣ Create Schedule
+      const scheduleRes = await createSchedule(scheduleData.interviewer, {
+        date: scheduleData.date,
+        time: scheduleData.time,
+        interviewType: scheduleData.interviewType,
+        location: scheduleData.location,
+        meetingLink: scheduleData.meetingLink,
+        duration: scheduleData.duration,
+        notes: scheduleData.notes
+      });
+
+      console.log("Schedule Response:", scheduleRes); // ✅ Debug
+
+      // 2️⃣ Extract scheduleId safely
+      const scheduleId = scheduleRes?.data?.scheduleId;
+
+      if (!scheduleId) {
+        alert("❌ Schedule ID not received from backend!");
+        console.error("Response did not contain scheduleId:", scheduleRes);
+        return;
+      }
+
+      // 3️⃣ Assign Trainees
+      await assignTrainees(scheduleId, scheduleData.trainees);
+
+      alert("✅ Interview Scheduled Successfully!");
+
     } catch (error) {
-      console.error('Scheduling error:', error);
-      alert('Failed to schedule interview. Please try again.');
+      console.error("Schedule Error:", error);
+      alert("❌ Failed to schedule interview");
     }
   };
+
 
   // Handle conflict resolution
   const handleResolveConflict = (conflictId, resolution) => {
     console.log('Resolving conflict:', conflictId, resolution);
-    
+
     if (conflictId === 'all') {
       setConflicts([]);
     } else {
@@ -271,7 +316,7 @@ const InterviewScheduling = () => {
     // This would populate the scheduling form with existing interview data
     setSelectedDate(new Date(interview.scheduledDate));
     setSelectedTime(interview?.time);
-    setSelectedTrainees([interview?.traineeId]);
+    setSelectedTrainees([interview?.empid]);
     setActiveView('calendar');
   };
 
@@ -307,18 +352,62 @@ const InterviewScheduling = () => {
     { id: 'conflicts', label: 'Conflicts', icon: 'AlertTriangle', badge: conflicts?.length }
   ];
 
+
+
+
+  const loadAllTrainers = async () => {
+    try {
+      const result = await fetchAllTrainees();
+      console.log("TRAINERS API RESULT:", result); // ✅ Add this
+      setTrainers(result);
+    } catch (error) {
+      console.error("Failed to load trainers:", error);
+    }
+  };
+
+  const loadAllTrainees = async () => {
+    try {
+      const result = await fetchAllTraineeSummary();
+      console.log("API RESULT:", result);
+
+      const formatted = (result?.data || []).map(t => ({
+        id: t.traineeId,
+        name: t.name || "Unknown",
+        email: t.email || "N/A",
+        progressPercentage: t.completionPercentage || 0,
+        lastInterviewDate: t.lastAssessmentDate || null,
+        interviewStatus: t.interviewStatus || "due",
+        priority: t.priority || "medium"
+      }));
+
+      setTrainees(formatted);
+
+    } catch (error) {
+      console.error("Failed to load trainees:", error);
+      setTrainees([]);
+    }
+  };
+
+
+  useEffect(() => {
+    loadAllTrainers();
+    loadAllTrainees();
+  }, []);
+
+
+
   return (
     <div className="min-h-screen bg-background">
-      <Header 
-        userRole="manager" 
-        userName="Training Manager" 
+      <Header
+        userRole="manager"
+        userName="Training Manager"
         onLogout={handleLogout}
       />
       <main className="pt-16">
         <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Breadcrumb */}
           <NavigationBreadcrumb userRole="manager" className="mb-6" />
-          
+
           {/* Page Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -327,7 +416,7 @@ const InterviewScheduling = () => {
                 Automate monthly interview coordination with conflict detection and notification management
               </p>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <Button
                 variant="outline"
@@ -354,10 +443,9 @@ const InterviewScheduling = () => {
               <button
                 key={tab?.id}
                 onClick={() => setActiveView(tab?.id)}
-                className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors duration-150 ${
-                  activeView === tab?.id
-                    ? 'border-primary text-primary' :'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
+                className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors duration-150 ${activeView === tab?.id
+                  ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
               >
                 <Icon name={tab?.icon} size={16} />
                 <span>{tab?.label}</span>
@@ -382,13 +470,13 @@ const InterviewScheduling = () => {
                   onTimeSlotSelect={handleTimeSlotSelect}
                   conflicts={conflicts}
                 />
-                
+
                 <SchedulingForm
                   selectedDate={selectedDate}
                   selectedTime={selectedTime}
                   selectedTrainees={selectedTrainees}
-                  interviewers={mockInterviewers}
-                  onSchedule={handleScheduleInterview}
+                  interviewers={trainers}
+                  onSchedule={handleSchedule}
                   onCancel={() => {
                     setSelectedDate(null);
                     setSelectedTime(null);
@@ -401,12 +489,12 @@ const InterviewScheduling = () => {
               {/* Trainee Selection Panel */}
               <div className="space-y-6">
                 <TraineeSelectionPanel
-                  trainees={mockTrainees}
+                  trainees={trainees}
                   selectedTrainees={selectedTrainees}
                   onTraineeSelect={handleTraineeSelect}
                   onBulkSelect={handleBulkTraineeSelect}
                 />
-                
+
                 {conflicts?.length > 0 && (
                   <ConflictDetection
                     conflicts={conflicts}
@@ -434,7 +522,7 @@ const InterviewScheduling = () => {
                 onResolveConflict={handleResolveConflict}
                 onViewAlternatives={handleViewAlternatives}
               />
-              
+
               {conflicts?.length === 0 && (
                 <div className="bg-card rounded-lg border border-border p-8 text-center">
                   <Icon name="CheckCircle" size={48} className="text-success mx-auto mb-4" />
@@ -462,7 +550,7 @@ const InterviewScheduling = () => {
                   >
                   </Button>
                 </div>
-                
+
                 <EmailNotificationPreview
                   interviewDetails={{
                     date: selectedDate,

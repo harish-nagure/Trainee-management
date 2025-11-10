@@ -23,8 +23,8 @@ const TraineeSelector = ({
   ];
 
   const filteredTrainees = trainees?.filter(trainee => {
-    const matchesSearch = trainee?.name?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
-                         trainee?.employeeId?.toLowerCase()?.includes(searchTerm?.toLowerCase());
+    const matchesSearch = trainee?.username?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
+                         trainee?.empid?.toLowerCase()?.includes(searchTerm?.toLowerCase());
     const matchesStep = !filterStep || trainee?.currentStep?.toString() === filterStep;
     return matchesSearch && matchesStep;
   });
@@ -80,9 +80,9 @@ const TraineeSelector = ({
         ) : (
           filteredTrainees?.map((trainee) => (
             <div
-              key={trainee?.id}
+              key={trainee?.empid}
               className={`border border-border rounded-lg p-4 cursor-pointer transition-all duration-150 hover:elevation-1 ${
-                selectedTrainee?.id === trainee?.id 
+                selectedTrainee?.empid === trainee?.empid
                   ? 'border-primary bg-primary/5' :'hover:border-primary/50'
               }`}
               onClick={() => onTraineeSelect(trainee)}
@@ -93,28 +93,28 @@ const TraineeSelector = ({
                     <Icon name="User" size={20} className="text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-foreground">{trainee?.name}</h3>
-                    <p className="text-sm text-muted-foreground">ID: {trainee?.employeeId}</p>
+                    <h3 className="font-medium text-foreground">{trainee?.username}</h3>
+                    <p className="text-sm text-muted-foreground">ID: {trainee?.empid}</p>
                     <div className="flex items-center space-x-2 mt-1">
-                      <span className="text-xs text-muted-foreground">Step {trainee?.currentStep}/5</span>
+                      <span className="text-xs text-muted-foreground">Step {trainee?.currentStep || 0}/5</span>
                       <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
                         <div 
                           className="h-full bg-primary transition-all duration-300"
-                          style={{ width: `${getProgressPercentage(trainee?.currentStep)}%` }}
+                          style={{ width: `${getProgressPercentage(trainee?.currentStep || 0)}%` }}
                         />
                       </div>
                       <span className="text-xs text-muted-foreground">
-                        {getProgressPercentage(trainee?.currentStep)}%
+                        {getProgressPercentage(trainee?.currentStep || 0)}%
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(trainee?.status)}`}>
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(trainee?.status || 'active')}`}>
                     {trainee?.status}
                   </span>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Last assessment: {trainee?.lastAssessment}
+                    Last assessment: {trainee?.lastAssessment || 'N/A'}
                   </p>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import NavigationBreadcrumb from '../../components/ui/NavigationBreadcrumb';
@@ -6,7 +6,7 @@ import TraineeMetricsPanel from './components/TraineeMetricsPanel';
 import FilterToolbar from './components/FilterToolbar';
 import TraineeDataTable from './components/TraineeDataTable';
 import AssessmentEntryModal from './components/AssessmentEntryModal';
-
+import { fetchAllTraineeSummary } from '../../api_service';
 const ManagerDashboard = () => {
   const navigate = useNavigate();
   const [selectedTrainees, setSelectedTrainees] = useState([]);
@@ -22,83 +22,97 @@ const ManagerDashboard = () => {
   });
 
   // Mock data for trainees
-  const mockTrainees = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      email: "sarah.johnson@company.com",
-      currentStep: "Step 3: Intermediate",
-      stepDescription: "React Components & Hooks",
-      completionPercentage: 75,
-      status: "in-progress",
-      lastAssessmentDate: "10/18/2024",
-      lastAssessmentScore: 88,
-      interviewStatus: "scheduled"
-    },
-    {
-      id: 2,
-      name: "Michael Chen",
-      email: "michael.chen@company.com",
-      currentStep: "Step 2: Fundamentals",
-      stepDescription: "JavaScript ES6+ Features",
-      completionPercentage: 45,
-      status: "in-progress",
-      lastAssessmentDate: "10/15/2024",
-      lastAssessmentScore: 72,
-      interviewStatus: "pending"
-    },
-    {
-      id: 3,
-      name: "Emily Rodriguez",
-      email: "emily.rodriguez@company.com",
-      currentStep: "Step 5: Final Project",
-      stepDescription: "Full-Stack Application",
-      completionPercentage: 95,
-      status: "completed",
-      lastAssessmentDate: "10/20/2024",
-      lastAssessmentScore: 94,
-      interviewStatus: "completed"
-    },
-    {
-      id: 4,
-      name: "David Thompson",
-      email: "david.thompson@company.com",
-      currentStep: "Step 1: Introduction",
-      stepDescription: "Web Development Basics",
-      completionPercentage: 20,
-      status: "in-progress",
-      lastAssessmentDate: "10/12/2024",
-      lastAssessmentScore: 65,
-      interviewStatus: "pending"
-    },
-    {
-      id: 5,
-      name: "Lisa Wang",
-      email: "lisa.wang@company.com",
-      currentStep: "Step 4: Advanced",
-      stepDescription: "State Management & APIs",
-      completionPercentage: 80,
-      status: "in-progress",
-      lastAssessmentDate: "10/19/2024",
-      lastAssessmentScore: 91,
-      interviewStatus: "scheduled"
-    },
-    {
-      id: 6,
-      name: "James Wilson",
-      email: "james.wilson@company.com",
-      currentStep: "Step 2: Fundamentals",
-      stepDescription: "JavaScript ES6+ Features",
-      completionPercentage: 35,
-      status: "in-progress",
-      lastAssessmentDate: "10/14/2024",
-      lastAssessmentScore: 58,
-      interviewStatus: "pending"
-    }
-  ];
+  // const mockTrainees = [
+  //   {
+  //     id: 1,
+  //     name: "Sarah Johnson",
+  //     email: "sarah.johnson@company.com",
+  //     currentStep: "Step 3: Intermediate",
+  //     stepDescription: "React Components & Hooks",
+  //     completionPercentage: 75,
+  //     status: "in-progress",
+  //     lastAssessmentDate: "10/18/2024",
+  //     lastAssessmentScore: 88,
+  //     interviewStatus: "scheduled"
+  //   },
+  
+  //   {
+  //     id: 2,
+  //     name: "Michael Chen",
+  //     email: "michael.chen@company.com",
+  //     currentStep: "Step 2: Fundamentals",
+  //     stepDescription: "JavaScript ES6+ Features",
+  //     completionPercentage: 45,
+  //     status: "in-progress",
+  //     lastAssessmentDate: "10/15/2024",
+  //     lastAssessmentScore: 72,
+  //     interviewStatus: "pending"
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Emily Rodriguez",
+  //     email: "emily.rodriguez@company.com",
+  //     currentStep: "Step 5: Final Project",
+  //     stepDescription: "Full-Stack Application",
+  //     completionPercentage: 95,
+  //     status: "completed",
+  //     lastAssessmentDate: "10/20/2024",
+  //     lastAssessmentScore: 94,
+  //     interviewStatus: "completed"
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "David Thompson",
+  //     email: "david.thompson@company.com",
+  //     currentStep: "Step 1: Introduction",
+  //     stepDescription: "Web Development Basics",
+  //     completionPercentage: 20,
+  //     status: "in-progress",
+  //     lastAssessmentDate: "10/12/2024",
+  //     lastAssessmentScore: 65,
+  //     interviewStatus: "pending"
+  //   },
+  //   {
+  //     id: 5,
+  //     name: "Lisa Wang",
+  //     email: "lisa.wang@company.com",
+  //     currentStep: "Step 4: Advanced",
+  //     stepDescription: "State Management & APIs",
+  //     completionPercentage: 80,
+  //     status: "in-progress",
+  //     lastAssessmentDate: "10/19/2024",
+  //     lastAssessmentScore: 91,
+  //     interviewStatus: "scheduled"
+  //   },
+  //   {
+  //     id: 6,
+  //     name: "James Wilson",
+  //     email: "james.wilson@company.com",
+  //     currentStep: "Step 2: Fundamentals",
+  //     stepDescription: "JavaScript ES6+ Features",
+  //     completionPercentage: 35,
+  //     status: "in-progress",
+  //     lastAssessmentDate: "10/14/2024",
+  //     lastAssessmentScore: 58,
+  //     interviewStatus: "pending"
+  //   }
+  // ];
 
-  const [trainees, setTrainees] = useState(mockTrainees);
-  const [filteredTrainees, setFilteredTrainees] = useState(mockTrainees);
+  const [trainees, setTrainees] = useState([]);
+  const [filteredTrainees, setFilteredTrainees] = useState([]);
+
+  useEffect(() => {
+    fetchTrainees();
+  }, []);
+
+  const fetchTrainees = async () => {
+    // In real implementation, fetch from API
+    // For now, using mock data
+    const response = await fetchAllTraineeSummary();
+    console.log('Fetched trainee summary:', response);
+    setTrainees(response.data);
+    setFilteredTrainees(response.data);
+  }
 
   // Calculate metrics
   const metrics = {

@@ -14,8 +14,8 @@ import AssessmentEntry from './pages/assessment-entry';
 const Routes = () => {
   return (
     <BrowserRouter>
-      <ErrorBoundary>
-      <ScrollToTop />
+      {/* <ErrorBoundary> */}
+      {/* <ScrollToTop /> */}
       <RouterRoutes>
         {/* Define your route here */}
         <Route path="/" element={<LoginScreen />} />
@@ -26,9 +26,10 @@ const Routes = () => {
         <Route path="/interview-scheduling" element={<InterviewScheduling />} />
         <Route path="/trainee-dashboard" element={<TraineeDashboard />} />
         <Route path="/assessment-entry" element={<AssessmentEntry />} />
+        <Route path="/progress-reports/:traineeId" element={<ProgressReports />} />
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
-      </ErrorBoundary>
+      {/* </ErrorBoundary> */}
     </BrowserRouter>
   );
 };
