@@ -472,50 +472,21 @@ const AssessmentForm = ({
     // subTopicId: null,
     subTopicIds: [],
     // syllabusTitles: []
-    interviewDone: false,
+    interviewDone: null,
     reviewNotes: "",     // ✅ review text (show only if Yes)
 
   });
 
-  // ✅ helper function – syllabus + subtopic filtering
-  const getCompletedSyllabusData = (data, traineeId) => {
-    return data
-      .map(syllabus => {
-        const completedSubTopics = syllabus.subTopics?.filter(subTopic =>
-          subTopic.stepProgress?.some(
-            progress =>
-              progress.checker === true &&
-              progress.complete === true &&
-              progress.user?.empid === traineeId
-          )
-        );
-
-        // ❌ syllabus hide if no valid subtopics
-        if (!completedSubTopics || completedSubTopics.length === 0) {
-          return null;
-        }
-
-        return {
-          ...syllabus,
-          subTopics: completedSubTopics
-        };
-      })
-      .filter(Boolean);
-  };
 
   const [errors, setErrors] = useState({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState('');
 
   const [selectedSyllabus, setSelectedSyllabus] = useState([]);
-
+  const [selectedSubTopics, setSelectedSubTopics] = useState([]);
 
   const [syllabusData, setSyllabusData] = useState([]);
   const [completedSubTopics, setCompletedSubTopics] = useState([]);
-  const [selectedTitle, setSelectedTitle] = useState("ALL");
-  const [selectedSubTopics, setSelectedSubTopics] = useState([]);
-
-
 
 
   const assessmentTypeOptions = [
@@ -562,6 +533,34 @@ const AssessmentForm = ({
     }
   };
 
+  
+  // ✅ helper function – syllabus + subtopic filtering
+  const getCompletedSyllabusData = (data, traineeId) => {
+    return data
+      .map(syllabus => {
+        const completedSubTopics = syllabus.subTopics?.filter(subTopic =>
+          subTopic.stepProgress?.some(
+            progress =>
+              progress.checker === true &&
+              progress.complete === true &&
+              progress.user?.empid === traineeId
+          )
+        );
+
+        // ❌ syllabus hide if no valid subtopics
+        if (!completedSubTopics || completedSubTopics.length === 0) {
+          return null;
+        }
+
+        return {
+          ...syllabus,
+          subTopics: completedSubTopics
+        };
+      })
+      .filter(Boolean);
+  };
+
+
   const validateForm = () => {
     const newErrors = {};
     // Subtopic validation
@@ -569,7 +568,7 @@ const AssessmentForm = ({
     //   newErrors.subTopic = 'Subtopic is required';
     // }
 
-    if (!formData?.subTopicIds || formData.subTopicIds.length === 0) {
+    if (!formData?.subTopicIds || formData?.subTopicIds.length === 0) {
       newErrors.subTopicIds = 'Subtopic is required';
     }
 
@@ -622,7 +621,7 @@ const AssessmentForm = ({
       empid: trainee?.trngid,
       traineeName: trainee?.name,
       currentStep: trainee?.currentStep,
-      subTopicId: formData.subTopicId,
+      subTopicIds: formData.subTopicIds,
       // isDraft,
       submittedAt: new Date()?.toISOString(),
       percentage: Math.round((parseFloat(formData?.marks) / parseFloat(formData?.maxMarks)) * 100),
@@ -691,57 +690,8 @@ const AssessmentForm = ({
   };
 
 
-  // useEffect(() => {
-  //   if (!trainee?.trngid) {
-  //     setCompletedSubTopics([]);
-  //     return;
-  //   }
-
-  //   const loadData = async () => {
-  //     try {
-  //       const response = await fetchCompletedSubTopics();
-
-  //       const data = Array.isArray(response)
-  //         ? response
-  //         : Array.isArray(response?.data)
-  //           ? response.data
-  //           : [];
-
-  //       const filteredSubTopics = data.flatMap(syllabus =>
-  //         syllabus.subTopics?.flatMap(subTopic =>
-  //           subTopic.stepProgress
-  //             ?.filter(progress =>
-  //               progress.checker === true &&
-  //               progress.user?.empid === trainee.trngid
-  //             )
-  //             ?.map(() => ({
-  //               value: subTopic.subTopicId,
-  //               label: `${syllabus.title} - ${subTopic.stepNumber}. ${subTopic.name}`
-  //             })) || []
-  //         ) || []
-  //       );
-
-  //       console.log(
-  //         "Filtered SubTopics for",
-  //         trainee.trngid,
-  //         filteredSubTopics
-  //       );
-
-  //       setCompletedSubTopics(filteredSubTopics);
-
-  //     } catch (err) {
-  //       console.error("Error fetching completed subtopics", err);
-  //       setCompletedSubTopics([]);
-  //     }
-  //   };
-
-  //   loadData();
-  // }, [trainee?.trngid]);
-
-
   useEffect(() => {
     if (!trainee?.trngid) {
-      setSyllabusData([]);
       setCompletedSubTopics([]);
       return;
     }
@@ -784,16 +734,6 @@ const AssessmentForm = ({
     loadData();
   }, [trainee?.trngid]);
 
-
-  // ✅ TITLE OPTIONS
-  // const titleOptions = [
-  //   { value: "ALL", label: "All Syllabus" },
-  //   ...syllabusData.map(s => ({
-  //     value: s.title,
-  //     label: s.title
-  //   }))
-  // ];
-
   const syllabusOptions = [
     { value: "ALL", label: "All Syllabus" },
     ...syllabusData.map(s => ({
@@ -820,29 +760,6 @@ const AssessmentForm = ({
       )
     ];
   })();
-
-  // =========================
-  // ✅ HANDLERS
-
-  // const handleTitleChange = value => {
-  //   setSelectedTitle(value);
-  //   setSelectedSubTopics([]);
-  // };
-
-
-  // const handleSubTopicChange = (values) => {
-  //   let selected = Array.isArray(values) ? values : [values];
-
-  //   // If "All Subtopics" is selected, select all filtered subtopics
-  //   if (selected.includes("ALL_SUBTOPICS")) {
-  //     selected = filteredSubTopicOptions
-  //       .filter(opt => opt.value !== "ALL_SUBTOPICS")
-  //       .map(opt => opt.value);
-  //   }
-
-  //   setSelectedSubTopics(selected);              // dropdown state
-  //   handleInputChange("subTopicIds", selected);  // formData state
-  // };
 
   const handleSyllabusChange = values => {
     let selected = Array.isArray(values) ? values : [values];
@@ -988,11 +905,11 @@ const AssessmentForm = ({
           //   handleInputChange('subTopicId', value)
           // }
           onChange={(values) =>
-            handleInputChange('subTopicIds', Array.isArray(values) ? values : [values])
-          }
-          multiple
+    handleInputChange('subTopicIds', Array.isArray(values) ? values : [values])
+  }
+   multiple 
           searchable
-        /> */}
+        />  */}
 
         {/* 🔹 TITLE DROPDOWN */}
         <div className="grid grid-cols-2 gap-4">
@@ -1085,7 +1002,7 @@ const AssessmentForm = ({
               <input
                 type="radio"
                 name="interviewDone"
-                checked={formData.interviewDone === true}
+                checked={formData.interviewDone === true }
                 onChange={() => handleInputChange("interviewDone", true)}
                 className="form-radio"
               />
@@ -1211,7 +1128,7 @@ const AssessmentForm = ({
           </Button>
         </div>
       </div>
-    </div >
+    </div>
   );
 };
 
