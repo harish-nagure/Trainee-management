@@ -632,7 +632,7 @@ const AssessmentEntry = () => {
 
     setSelectedTrainee(trainee);
     try {
-      const data = await getTraineeAssessments(trainee?.id);
+      const data = await getTraineeAssessments(trainee?.trngid);
       setHistoryAssessments(data);
     } catch (error) {
       console.error("Error fetching assessments:", error);

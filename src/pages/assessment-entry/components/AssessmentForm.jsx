@@ -625,7 +625,9 @@ const AssessmentForm = ({
       subTopicId: formData.subTopicId,
       // isDraft,
       submittedAt: new Date()?.toISOString(),
-      percentage: Math.round((parseFloat(formData?.marks) / parseFloat(formData?.maxMarks)) * 100)
+      percentage: Math.round((parseFloat(formData?.marks) / parseFloat(formData?.maxMarks)) * 100),
+      //syllabusTitles: formData.syllabusTitles,
+
     };
 
     console.log('Final assessment data to submit:', assessmentData);
