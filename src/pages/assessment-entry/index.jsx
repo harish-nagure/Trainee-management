@@ -459,7 +459,7 @@ import AssessmentHistory from './components/AssessmentHistory';
 import AssessmentDetailsModal from './components/AssessmentDetailsModal';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
-import { fetchAllTrainees, fetchAssessmentsByTrainee, fetchTraineesByManagerId } from '../../api_service';
+import { fetchAllTrainees, fetchAssessmentsByTrainee, fetchTraineesByManagerId, fetchTraineeSummaryByManager } from '../../api_service';
 
 const AssessmentEntry = () => {
   const navigate = useNavigate();
@@ -604,21 +604,52 @@ const AssessmentEntry = () => {
   const { interview } = location.state || {};
 
 
+  // useEffect(() => {
+  //   // Fetch initial data if needed
+  //   const fetchData = async () => {
+  //     try {
+  //       const managerId = sessionStorage.getItem("userId");
+  //       const trainees = await fetchTraineeSummaryByManager(managerId);
+  //       setTrainees(trainees.data);
+  //       console.log('Fetched trainees:', trainees.data);
+
+  //     } catch (error) {
+  //       console.error("Error fetching trainees:", error);
+  //     }
+  //   };
+  //   fetchData();
+  // }, []);
+
   useEffect(() => {
-    // Fetch initial data if needed
     const fetchData = async () => {
       try {
         const managerId = sessionStorage.getItem("userId");
-        const trainees = await fetchTraineesByManagerId(managerId);
-        setTrainees(trainees.data);
-        console.log('Fetched trainees:', trainees.data);
+        const res = await fetchTraineeSummaryByManager(managerId);
+
+        const normalizedTrainees = (res.data || []).map(t => ({
+          trngid: t.traineeId,          // 🔥 IMPORTANT
+          traineeId: t.traineeId,
+          name: t.name,
+          email: t.email,
+          currentStep: t.currentStep,  // "Step 1"
+          completionPercentage: t.completionPercentage,
+          interviewStatus: t.interviewStatus,
+          lastAssessmentDate: t.lastAssessmentDate,
+          lastAssessmentScore: t.lastAssessmentScore,
+          subtopics: t.subtopics
+        }));
+
+        setTrainees(normalizedTrainees);
+        console.log("Normalized trainees:", normalizedTrainees);
 
       } catch (error) {
         console.error("Error fetching trainees:", error);
       }
     };
+
     fetchData();
   }, []);
+
 
   useEffect(() => {
     console.log('Interview data from navigation state:', interview);
@@ -627,29 +658,29 @@ const AssessmentEntry = () => {
     }
   }, [interview]);
 
-  const handleTraineeSelect = async (trainee) => {
-    console.log('Selected trainee:', trainee);
-    // try {
-    //   const trainees = await fetchAllTrainees();
-    //   setTrainees(trainees.data);
-    //   console.log('Fetched trainees:', trainees.data);
+  // const handleTraineeSelect = async (trainee) => {
+  //   console.log('Selected trainee:', trainee);
+  //   // try {
+  //   //   const trainees = await fetchAllTrainees();
+  //   //   setTrainees(trainees.data);
+  //   //   console.log('Fetched trainees:', trainees.data);
 
-    // } catch (error) {
-    //   console.error("Error fetching trainees:", error);
-    // }
+  //   // } catch (error) {
+  //   //   console.error("Error fetching trainees:", error);
+  //   // }
 
-    setSelectedTrainee(trainee);
-    try {
-      const data = await getTraineeAssessments(trainee?.trngid);
-      setHistoryAssessments(data);
-      console.log("Assessment data set:", data);
-    } catch (error) {
-      console.error("Error fetching assessments:", error);
-      setHistoryAssessments([]);
-    }
+  //   setSelectedTrainee(trainee);
+  //   try {
+  //     const data = await getTraineeAssessments(trainee?.trngid);
+  //     setHistoryAssessments(data);
+  //     console.log("Assessment data set:", data);
+  //   } catch (error) {
+  //     console.error("Error fetching assessments:", error);
+  //     setHistoryAssessments([]);
+  //   }
 
 
-  };
+  // };
 
 
   // const handleSaveAssessment = async (assessmentData) => {
@@ -674,6 +705,21 @@ const AssessmentEntry = () => {
   //     setIsLoading(false);
   //   }
   // };
+
+
+  const handleTraineeSelect = async (trainee) => {
+    if (!trainee?.trngid) return;
+
+    setSelectedTrainee(trainee);
+
+    try {
+      const data = await getTraineeAssessments(trainee.trngid);
+      setHistoryAssessments(data);
+    } catch (error) {
+      console.error("Error fetching assessments:", error);
+      setHistoryAssessments([]);
+    }
+  };
 
   const handleSaveDraft = async (draftData) => {
     try {

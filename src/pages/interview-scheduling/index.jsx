@@ -13,7 +13,7 @@ import Button from '../../components/ui/Button';
 
 // import { } from "../../Api/apiAuth";
 
-import { createSchedule, assignTrainees, fetchAllTrainees, fetchAllTraineeSummary, fetchAllSchedules, updateInterviewSchedule, deleteInterviewSchedule, fetchTraineesByManagerId } from "../../api_service";
+import { createSchedule, assignTrainees, fetchAllTrainees, fetchAllTraineeSummary, fetchAllSchedules, updateInterviewSchedule, deleteInterviewSchedule, fetchTraineesByManagerId, fetchTraineeSummaryByManager } from "../../api_service";
 // import { getAllTrainers, getAllTrainees } from "../../Api/apiAuth";
 
 
@@ -280,7 +280,7 @@ const InterviewScheduling = () => {
     } else {
       alert("Creating new schedule");
 
-      
+
       try {
         // 1️⃣ Create Schedule
         const scheduleRes = await createSchedule(scheduleData.interviewer, {
@@ -305,10 +305,10 @@ const InterviewScheduling = () => {
 
 
         console.log("created Schedule ID:", scheduleData);
-        const emailIds = [...scheduleData.trainees,scheduleData.interviewerId];
+        const emailIds = [...scheduleData.trainees, scheduleData.interviewerId];
         console.log("Trainee Emails for Notification:", emailIds);
         // 3️⃣ Assign Trainees
-        await assignTrainees(scheduleId,emailIds);
+        await assignTrainees(scheduleId, emailIds);
 
         alert("✅ Interview Scheduled Successfully!");
 
@@ -386,9 +386,9 @@ const InterviewScheduling = () => {
     // setSelectedTrainees(traineeId ? [traineeId] : []);
     // console.log("INTERVIEW TRAINEE ID:", schedules);
     console.log(interview)
-    console.log("fddddddd",interview[0]?.interviewSchedule)
+    console.log("fddddddd", interview[0]?.interviewSchedule)
     setFormdata(interview[0]?.interviewSchedule);
-    
+
 
     // Keep schedules intact; no need to overwrite all schedules
     // setSchedules(interview?.interviewSchedule); <-- REMOVE
@@ -522,7 +522,7 @@ const InterviewScheduling = () => {
       //   // interviewStatus: t.interviewStatus || "due",
       //   // priority: t.priority || "medium"
       // }));
-      
+
       const formatted = (result.data || []).map(t => ({
         id: t.trngid,
         name: `${t.firstname} ${t.lastname}`,
