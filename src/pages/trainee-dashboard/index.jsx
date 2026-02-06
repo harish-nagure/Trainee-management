@@ -27,6 +27,9 @@ const TraineeDashboard = () => {
   const [interviews, setInterviews] = useState([]);
 
   const [loading, setLoading] = useState(false);
+  const [syllabusProgress, setSyllabusProgress] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0);
+
 
 
 
@@ -123,7 +126,7 @@ const TraineeDashboard = () => {
         if (response?.data) {
           // API returns: { status, success, message, data:[ ... ] }
 
-        
+
 
           const cleanData = response.data.map(item => {
             const schedule = item.interviewSchedule;
@@ -141,12 +144,13 @@ const TraineeDashboard = () => {
               notes: schedule?.notes,
               meetingLink: schedule?.meetingLink,
               subTopics: schedule?.subTopics,
-              interviewerName: interviewer?.firstname + " " +interviewer?.lastname,
+              interviewerName: interviewer?.firstname + " " + interviewer?.lastname,
               interviewerEmail: interviewer?.emailid,
               eventId: item?.eventId,
-              rsvpStatus: item?.rsvpStatus?.trim(),            
+              rsvpStatus: item?.rsvpStatus?.trim(),
             };
-          });
+          })
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
 
           console.log("Loaded interviews:", cleanData);
           setInterviews(cleanData);
@@ -158,7 +162,7 @@ const TraineeDashboard = () => {
     };
 
     loadData();
-  }, []);
+  }, [refreshKey]);
 
 
   useEffect(() => {
@@ -202,7 +206,8 @@ const TraineeDashboard = () => {
           submittedAt: a.submittedAt,
 
           status: Number(a.currentStep) >= 1 ? "completed" : "pending"
-        }));
+        }))
+          .sort((a, b) => new Date(b.date) - new Date(a.date));
 
         setAssessments(normalized);
 
@@ -212,7 +217,7 @@ const TraineeDashboard = () => {
     };
 
     loadTraineeData();
-  }, []);
+  }, [refreshKey]);
 
 
 
@@ -244,7 +249,7 @@ const TraineeDashboard = () => {
   const handleLogout = () => {
     // Clear session data
     localStorage.removeItem('authToken');
-     
+
     sessionStorage.clear();
     navigate('/');
   };
@@ -264,10 +269,11 @@ const TraineeDashboard = () => {
         const apiData = result?.data || result || [];
 
         const sortedData = [...apiData].sort((a, b) => {
-        const dateA = new Date(a?.createdDate || 0);
-        const dateB = new Date(b?.createdDate || 0);
-        return dateA - dateB;
-      });
+          const dateA = new Date(a?.createdDate || 0);
+          const dateB = new Date(b?.createdDate || 0);
+          return dateA - dateB;
+        });
+        setSyllabusProgress(sortedData);
 
         const formattedSteps = sortedData.map((item, index, arr) => {
           // ✔ current step completed
@@ -275,7 +281,7 @@ const TraineeDashboard = () => {
             sub?.stepProgress?.some(p => p.complete === true && p.checker === true)
           );
 
- 
+
           // ✔ previous step completed
           const prevCompleted =
             index === 0
@@ -301,11 +307,11 @@ const TraineeDashboard = () => {
         setStepsStatus(formattedSteps);
 
         const totalSteps = stepsStatus.length;
-  const completedSteps = stepsStatus.filter(s => s.completed).length;
+        const completedSteps = stepsStatus.filter(s => s.completed).length;
 
-          const progressPercentage =
-    totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
-          setOverall(progressPercentage.toFixed(0));
+        const progressPercentage =
+          totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
+        setOverall(progressPercentage.toFixed(0));
         setLoading(false);
       } catch (err) {
         console.error(err);
@@ -314,7 +320,7 @@ const TraineeDashboard = () => {
     };
 
     if (empid) fetchData();
-  }, [empid]);
+  }, [empid, refreshKey]);
 
 
   if (isLoading) {
@@ -425,7 +431,9 @@ const TraineeDashboard = () => {
               /> */}
 
               {/* Assessment History */}
-              <AssessmentHistory assessments={assessments} />
+              <AssessmentHistory
+                assessments={assessments}
+                syllabus={syllabusProgress} />
             </div>
 
             {/* Right Column - Sidebar */}
@@ -445,7 +453,7 @@ const TraineeDashboard = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Steps Completed</span>
-                    <span className="font-medium text-foreground">{stepsStatus.filter(item => item.locked === false).length-1}/{stepsStatus.length}</span>
+                    <span className="font-medium text-foreground">{stepsStatus.filter(item => item.locked === false).length - 1}/{stepsStatus.length}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Current Step</span>

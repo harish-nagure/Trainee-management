@@ -458,55 +458,55 @@ const AssessmentEntryModal = ({ isOpen, onClose, trainee }) => {
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
   };
 
-const validateForm = () => {
-  const newErrors = {};
+  const validateForm = () => {
+    const newErrors = {};
 
-  // 1️⃣ Assessment Type
-  if (!assessmentData.assessmentType) {
-    newErrors.assessmentType = "Assessment type is required";
-  }
+    // 1️⃣ Assessment Type
+    if (!assessmentData.assessmentType) {
+      newErrors.assessmentType = "Assessment type is required";
+    }
 
-  // 2️⃣ Marks
-  if (!assessmentData.marks) {
-    newErrors.marks = "Marks obtained is required";
-  } 
+    // 2️⃣ Marks
+    if (!assessmentData.marks) {
+      newErrors.marks = "Marks obtained is required";
+    }
 
-  // 3️⃣ Max Marks
-  if (!assessmentData.maxMarks) {
-    newErrors.maxMarks = "Maximum marks is required";
-  } 
+    // 3️⃣ Max Marks
+    if (!assessmentData.maxMarks) {
+      newErrors.maxMarks = "Maximum marks is required";
+    }
 
-  // 4️⃣ Syllabus
-  if (!selectedSyllabus || selectedSyllabus.length === 0) {
-    newErrors.syllabus = "Please select at least one syllabus";
-  }
+    // 4️⃣ Syllabus
+    if (!selectedSyllabus || selectedSyllabus.length === 0) {
+      newErrors.syllabus = "Please select at least one syllabus";
+    }
 
-  // 5️⃣ Sub Topics
-  if (!assessmentData.subTopics || assessmentData.subTopics.length === 0) {
-    newErrors.subTopics = "Please select at least one sub topic";
-  }
+    // 5️⃣ Sub Topics
+    if (!assessmentData.subTopics || assessmentData.subTopics.length === 0) {
+      newErrors.subTopics = "Please select at least one sub topic";
+    }
 
-  // 6️⃣ Remarks
-  if (!assessmentData.remarks || assessmentData.remarks.trim().length < 10) {
-    newErrors.remarks = "Remarks must be at least 10 characters";
-  }
+    // 6️⃣ Remarks
+    if (!assessmentData.remarks || assessmentData.remarks.trim().length < 10) {
+      newErrors.remarks = "Remarks must be at least 10 characters";
+    }
 
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Submitting assessment data:", assessmentData,existingAssessmentId);
+    console.log("Submitting assessment data:", assessmentData, existingAssessmentId);
     // if (!validateForm()) return;
 
     setIsSubmitting(true);
     const payload = {
       ...assessmentData,
       subTopicIds: assessmentData.subTopicIds,
-       subTopics: selectedSubTopics.join("|"),
+      subTopics: selectedSubTopics.join("|"),
       marks: parseInt(assessmentData.marks),
       maxMarks: parseInt(assessmentData.maxMarks),
       percentage: Math.round((assessmentData.marks / assessmentData.maxMarks) * 100),
@@ -520,6 +520,7 @@ const validateForm = () => {
         setTimeout(() => { setShowUpdateAlert(false); }, 2000);
       } else {
         await createAssessment(trainee.traineeId, payload);
+
       }
     } catch (err) {
       console.error(err);
@@ -617,7 +618,7 @@ const validateForm = () => {
     setSelectedSyllabus(selected);
     //handleInputChange("syllabusTitles", selected);
     // setSelectedSubTopics([]);
-    
+
     handleInputChange("subTopicIds", []);
   };
 

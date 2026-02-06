@@ -192,14 +192,17 @@ const TraineeDataTable = ({
                 </td>
                 <td className="px-6 py-4">
                   <div>
-                      
+
 
                     {/* <p className="text-sm font-medium text-foreground">{trainee?.currentStep}</p> */}
-                   
+
                     <p className="text-sm font-medium text-foreground">
-                    {trainee?.subtopics && trainee.subtopics.length > 0
-                        ? `Step: ${trainee.subtopics} `
-                        : "No Assessment Yet"}</p>
+                      {trainee?.subtopics && trainee.subtopics.length > 0
+                        ? `Step: ${trainee.subtopics[trainee.subtopics.length - 1]}`
+                        : "No Assessment Yet"}
+                    </p>
+
+
                     <p className="text-xs text-muted-foreground">{trainee?.stepDescription}</p>
                   </div>
                 </td>
@@ -284,7 +287,13 @@ const TraineeDataTable = ({
             <div className="space-y-3">
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Current Step</p>
-                <p className="text-sm font-medium text-foreground">{trainee?.currentStep}</p>
+                <p className="text-sm font-medium text-foreground">
+                  {trainee?.subtopics && trainee.subtopics.length > 0
+                    ? `Step: ${trainee.subtopics[trainee.subtopics.length - 1]}`
+                    : "No Assessment Yet"}
+                </p>
+
+
               </div>
 
               <div>

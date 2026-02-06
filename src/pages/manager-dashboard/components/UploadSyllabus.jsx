@@ -7,7 +7,7 @@ import Input from "../../../components/ui/Input";
 import Icon from "../../../components/AppIcon";
 import Select from "../../../components/ui/Select";
 import '../../../App.css'
-import { uploadSyllabusAPI, getAllSyllabusAPI, updateSyllabusAPI, getAllTrainers } from "../../../api_service";
+import { uploadSyllabusAPI, getAllSyllabusAPI, updateSyllabusAPI, getAllTrainers, deleteSubTopicAPI, deleteSyllabusAPI } from "../../../api_service";
 
 const UploadSyllabus = ({ onCancel }) => {
     const [formData, setFormData] = useState({
@@ -22,6 +22,8 @@ const UploadSyllabus = ({ onCancel }) => {
     const [syllabusList, setSyllabusList] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [trainerList, setTrainerList] = useState([]);
+    const [refreshKey, setRefreshKey] = useState(0);
+
 
 
 
@@ -46,13 +48,26 @@ const UploadSyllabus = ({ onCancel }) => {
             console.error("Failed to fetch trainers", err);
         }
     };
+    // useEffect(() => {
+    //     loadAll();
+    //     loadTrainers();
+    // }, []);
+
     useEffect(() => {
         loadAll();
+    }, [refreshKey]);
+
+    useEffect(() => {
         loadTrainers();
     }, []);
+
     useEffect(() => {
         console.log("Updated Trainer List:", trainerList);
     }, [trainerList]);
+
+    const triggerReload = () => {
+        setRefreshKey(prev => prev + 1);
+    };
 
     const handleChange = (field, value) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -72,13 +87,48 @@ const UploadSyllabus = ({ onCancel }) => {
         }));
     };
 
-    const deleteSubTopic = (index) => {
-        
-    if (!window.confirm("This will permanently delete this subtopic. Continue?")) return;
-        const updated = [...formData.subTopics];
-        updated.splice(index, 1);
-        setFormData((prev) => ({ ...prev, subTopics: updated }));
+    // const deleteSubTopic = (index) => {
+
+    //     if (!window.confirm("This will permanently delete this subtopic. Continue?")) return;
+    //     const updated = [...formData.subTopics];
+    //     updated.splice(index, 1);
+    //     setFormData((prev) => ({ ...prev, subTopics: updated }));
+    // };
+
+    const handleDeleteSyllabus = async (syllabusId) => {
+        if (!window.confirm("This will permanently delete this syllabus and all its subtopics. Continue?")) return;
+
+        try {
+            await deleteSyllabusAPI(syllabusId);
+            alert("Syllabus deleted successfully!");
+            triggerReload();
+            //await loadAll(); // Refresh the syllabus list
+        } catch (err) {
+            console.error(err);
+            alert("Failed to delete syllabus");
+
+        }
     };
+
+
+
+    const deleteSubTopic = async (index, subTopicId) => {
+        if (!window.confirm("This will permanently delete this subtopic. Continue?")) return;
+
+        try {
+            if (subTopicId) {
+                await deleteSubTopicAPI(subTopicId);
+                alert("Subtopic deleted successfully from server!");
+                triggerReload();
+            }
+            const updated = [...formData.subTopics];
+            updated.splice(index, 1);
+            setFormData(prev => ({ ...prev, subTopics: updated }));
+        } catch (err) {
+            console.error(err);
+            alert("Failed to delete subtopic");
+        }
+    }
 
     // const interviewerOptions = Array.isArray(trainerList)
     //     ? (trainerList).map((t) => ({
@@ -88,12 +138,12 @@ const UploadSyllabus = ({ onCancel }) => {
     //     : [];
 
     console.log(trainerList)
-         const interviewerOptions = Array.isArray(trainerList)
-    ? (trainerList).map((t) => ({
-      value: t.trngid,
-      label: `${t.firstname} ${t.lastname}${t.role.roleName ? " - " + t.role.roleName : ""}`,
-    }))
-    : [];
+    const interviewerOptions = Array.isArray(trainerList)
+        ? (trainerList).map((t) => ({
+            value: t.trngid,
+            label: `${t.firstname} ${t.lastname}${t.role.roleName ? " - " + t.role.roleName : ""}`,
+        }))
+        : [];
 
     const validateForm = () => {
         const newErrors = {};
@@ -228,10 +278,16 @@ const UploadSyllabus = ({ onCancel }) => {
             if (editingId) {
                 setSyllabusList(prev => prev.map(it => it.id === editingId ? res.data : it));
                 alert("Updated Successfully!");
+
             } else {
                 setSyllabusList(prev => [...prev, res.data]);
                 alert("Uploaded Successfully!");
+
             }
+            //await loadAll();
+            triggerReload();
+
+
 
             setEditingId(null);
 
@@ -244,8 +300,33 @@ const UploadSyllabus = ({ onCancel }) => {
     };
 
     console.log("Trainer List:", trainerList);
+    // const editSyllabus = (item) => {
+    //     setEditingId(item.id);
+
+    //     setFormData({
+    //         title: item.title,
+    //         topic: item.topic,
+    //         durationInDays: item.durationInDays,
+    //         subTopics: (item.subTopics && item.subTopics.length > 0)
+    //             ? item.subTopics.map(sub => ({
+    //                 id: sub.id,
+    //                 name: sub.name,
+    //                 description: sub.description,
+    //                 file: sub.filePath || null,
+    //                 // trainerId: sub.trainer?.trainerId || "",
+    //                 manager: sub.managerId ? { trngid: sub.managerId } : null
+
+    //                 // store the existing file path
+
+    //                 // store the existing file path
+    //             }))
+    //             : [{ name: "", description: "", file: null, managerId: "" }]
+    //     });
+    // };
+
+    // 1. UPDATED EDIT LOGIC
     const editSyllabus = (item) => {
-        setEditingId(item.id);
+        setEditingId(item.id); // Matches "id" in your JSON
 
         setFormData({
             title: item.title,
@@ -257,18 +338,65 @@ const UploadSyllabus = ({ onCancel }) => {
                     name: sub.name,
                     description: sub.description,
                     file: sub.filePath || null,
-                    // trainerId: sub.trainer?.trainerId || "",
-                    manager: sub.managerId? { trngid: sub.managerId } : null
-
-                    // store the existing file path
-
-                    // store the existing file path
+                    // Fix: Accessing manager.trngid based on your JSON response
+                    managerId: sub.manager ? sub.manager.trngid : ""
                 }))
                 : [{ name: "", description: "", file: null, managerId: "" }]
         });
     };
 
+    // ... inside your return statement ...
 
+    {/* RIGHT LIST - Updated with visible Date */ }
+    <div className="bg-white/70 p-6 shadow-xl rounded-2xl border border-blue-200 h-fit sticky top-24">
+        <h2 className="text-2xl font-bold text-blue-700 mb-4 flex items-center gap-2">
+            <Icon name="List" size={24} className="text-blue-700" />
+            Syllabus List
+        </h2>
+
+        {syllabusList.length === 0 ? (
+            <p className="text-gray-500">No syllabus uploaded yet.</p>
+        ) : (
+            <ul className="space-y-3">
+                {syllabusList.map((item) => (
+                    <li
+                        key={item.id}
+                        className="p-4 bg-blue-50 rounded-lg border border-blue-100 cursor-pointer hover:bg-blue-100 relative group transition-all"
+                        onClick={() => editSyllabus(item)}
+                    >
+                        <div className="pr-10">
+                            <h4 className="font-semibold text-blue-900">{item.title}</h4>
+                            <p className="text-sm text-gray-600">{item.topic}</p>
+
+                            {/* VISIBLE DATE */}
+                            <div className="flex items-center gap-1 mt-2 text-[11px] text-gray-400 font-medium">
+                                <Icon name="Calendar" size={12} />
+                                <span>
+                                    {item.createdAt
+                                        ? new Date(item.createdAt).toLocaleDateString('en-GB', {
+                                            day: '2-digit',
+                                            month: 'short',
+                                            year: 'numeric'
+                                        })
+                                        : "N/A"}
+                                </span>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteSyllabus(item.id);
+                            }}
+                            className="absolute top-4 right-4 text-red-400 hover:text-red-600 transition-colors"
+                        >
+                            <Icon name="Trash2" size={18} />
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        )}
+    </div>
     return (
         <div className="min-h-screen bg-blue-50">
             <Header
@@ -349,12 +477,20 @@ const UploadSyllabus = ({ onCancel }) => {
                                 {formData.subTopics.map((sub, index) => (
                                     <div key={index} className="border p-5 rounded-xl bg-white shadow relative">
 
-                                        <button
+                                        {/* <button
                                             onClick={() => deleteSubTopic(index)}
                                             className="absolute top-3 right-3 text-red-500 hover:text-red-700"
                                         >
                                             <Icon name="Trash2" size={22} />
+                                        </button> */}
+
+                                        <button
+                                            onClick={() => deleteSubTopic(index, sub.id)}
+                                            className="absolute top-3 right-3 text-red-500 hover:text-red-700"
+                                        >
+                                            <Icon name="Trash2" size={22} />
                                         </button>
+
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
                                             <Input
@@ -477,6 +613,7 @@ const UploadSyllabus = ({ onCancel }) => {
                     </div>
 
                     {/* RIGHT LIST */}
+                    {/* RIGHT LIST - Updated with visible Date */}
                     <div className="bg-white/70 p-6 shadow-xl rounded-2xl border border-blue-200 h-fit sticky top-24">
                         <h2 className="text-2xl font-bold text-blue-700 mb-4 flex items-center gap-2">
                             <Icon name="List" size={24} className="text-blue-700" />
@@ -490,17 +627,37 @@ const UploadSyllabus = ({ onCancel }) => {
                                 {syllabusList.map((item) => (
                                     <li
                                         key={item.id}
-                                        className="p-4 bg-blue-50 rounded-lg border cursor-pointer hover:bg-blue-100"
+                                        className="p-4 bg-blue-50 rounded-lg border border-blue-100 cursor-pointer hover:bg-blue-100 relative group transition-all"
                                         onClick={() => editSyllabus(item)}
                                     >
-                                        <h4 className="font-semibold text-blue-900">{item.title}</h4>
-                                        <p className="text-sm text-gray-600">{item.topic}</p>
-                                        {/* <p className="text-sm text-gray-500 mt-1">
-                                            {item.subTopics.length} 
-                                            {item.subTopics.map((i)=>(
-                                                    i.filePath
-                                            ))} Subtopics
-                                        </p> */}
+                                        <div className="pr-10">
+                                            <h4 className="font-semibold text-blue-900">{item.title}</h4>
+                                            <p className="text-sm text-gray-600">{item.topic}</p>
+
+                                            {/* VISIBLE DATE */}
+                                            {/* <div className="flex items-center gap-1 mt-2 text-[11px] text-gray-400 font-medium">
+                                                <Icon name="Calendar" size={12} />
+                                                <span>
+                                                    {item.createdAt
+                                                        ? new Date(item.createdAt).toLocaleDateString('en-GB', {
+                                                            day: '2-digit',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        })
+                                                        : "N/A"}
+                                                </span>
+                                            </div> */}
+                                        </div>
+
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteSyllabus(item.id);
+                                            }}
+                                            className="absolute top-4 right-4 text-red-400 hover:text-red-600 transition-colors"
+                                        >
+                                            <Icon name="Trash2" size={18} />
+                                        </button>
                                     </li>
                                 ))}
                             </ul>

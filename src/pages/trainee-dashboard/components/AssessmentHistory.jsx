@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const AssessmentHistory = ({ className = '', assessments = [] }) => {
+const AssessmentHistory = ({ className = '', assessments = [], syllabus = [] }) => {
   const [selectedAssessment, setSelectedAssessment] = useState(null);
 
   //   const assessments = [
@@ -193,6 +193,8 @@ const AssessmentHistory = ({ className = '', assessments = [] }) => {
                 <span>Manager: {assessment?.managerName}</span>
               </div>
 
+
+
               {/* Remarks Preview */}
               {assessment?.remarks &&
                 <div className="bg-muted/30 rounded-lg p-3 mb-3">
@@ -252,6 +254,93 @@ const AssessmentHistory = ({ className = '', assessments = [] }) => {
                         <p className="text-xs text-muted-foreground">Training Manager</p>
                       </div>
                     </div>
+
+                    {/* Completed Subtopics */}
+                    {/* Syllabus & Completed Subtopics */}
+                    {/* {syllabus?.[assessment.week - 1] && (
+                      <div className="bg-primary/5 rounded-lg p-4">
+                        <h4 className="font-medium text-foreground mb-1">
+                          Syllabus: {syllabus[assessment.week - 1]?.title}
+                        </h4>
+
+                       
+
+                        Subtopics :{syllabus[assessment.week - 1]?.subTopics
+                          ?.filter(sub =>
+                            sub?.stepProgress?.some(
+                              p => p.complete === true && p.checker === true
+                            )
+                          )?.length > 0 ? (
+                          <ul className="list-disc ml-5 text-sm text-foreground space-y-1">
+                            {syllabus[assessment.week - 1]?.subTopics
+                              ?.filter(sub =>
+                                sub?.stepProgress?.some(
+                                  p => p.complete === true && p.checker === true
+                                )
+                              )
+                              ?.map((sub, idx) => (
+                                <li key={idx}>{sub?.name}</li>
+                              ))}
+                          </ul>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            No subtopics completed yet.
+                          </p>
+                        )}
+                      </div>
+                    )} */}
+                    {syllabus?.[assessment.week - 1] && (
+                      <div className="bg-primary/5 rounded-lg p-3">
+                        <div className="flex items-start gap-2">
+
+                          {/* LEFT: SYLLABUS */}
+                          <div className="w-[28%] font-medium text-foreground text-sm whitespace-nowrap">
+                            📘 Syllabus:
+                            <span className="ml-1 font-normal">
+                              {syllabus[assessment.week - 1]?.title}
+                            </span>
+                          </div>
+
+                          {/* RIGHT: COMPLETED SUBTOPICS */}
+                          <div className="w-[72%] flex items-center gap-1 overflow-x-auto whitespace-nowrap text-sm">
+                            <span className="text-muted-foreground mr-1">
+                              Subtopics:
+                            </span>
+
+                            {syllabus[assessment.week - 1]?.subTopics
+                              ?.filter(sub =>
+                                sub?.stepProgress?.some(
+                                  p => p.complete === true && p.checker === true
+                                )
+                              )?.length > 0 ? (
+                              syllabus[assessment.week - 1]?.subTopics
+                                ?.filter(sub =>
+                                  sub?.stepProgress?.some(
+                                    p => p.complete === true && p.checker === true
+                                  )
+                                )
+                                ?.map((sub, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="px-2 py-[2px] rounded-md
+                bg-primary/10 text-primary border border-primary/30
+                shrink-0"
+                                  >
+                                    {sub.name}
+                                  </span>
+                                ))
+                            ) : (
+                              <span className="text-muted-foreground">
+                                No subtopics completed
+                              </span>
+                            )}
+                          </div>
+
+                        </div>
+                      </div>
+                    )}
+
+
 
                     {/* Full Remarks */}
                     <div className="bg-muted/30 rounded-lg p-4">

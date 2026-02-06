@@ -507,33 +507,64 @@ const InterviewScheduling = () => {
     }
   };
 
+  // const loadAllTrainees = async () => {
+  //   try {
+  //     const managerId = sessionStorage.getItem("userId");
+  //     const result = await fetchTraineesByManagerId(managerId);
+  //     console.log("API RESULT:", result);
+
+  //     // const formatted = (result.data || []).map(t => ({
+  //     //   id: t.traineeId,
+  //     //   name: t.name || "Unknown",
+  //     //   email: t.email || "N/A",
+  //     //   progressPercentage: t.completionPercentage || 0,
+  //     //   lastInterviewDate: t.lastAssessmentDate || null,
+  //     //   // interviewStatus: t.interviewStatus || "due",
+  //     //   // priority: t.priority || "medium"
+  //     // }));
+
+  //     const formatted = (result.data || []).map(t => ({
+  //       id: t.trngid,
+  //       name: `${t.firstname} ${t.lastname}`,
+  //       email: t.emailid,
+  //       phone: t.phonenumber,
+  //       designation: t.designation,
+  //       manager: t.managerData?.username || "No Manager"
+  //     }));
+
+
+  //     console.log("hsjjjjjjjjjd", formatted);
+  //     setTrainees(formatted);
+
+  //   } catch (error) {
+  //     console.error("Failed to load trainees:", error);
+  //     setTrainees([]);
+  //   }
+  // };
+
   const loadAllTrainees = async () => {
     try {
       const managerId = sessionStorage.getItem("userId");
-      const result = await fetchTraineesByManagerId(managerId);
-      console.log("API RESULT:", result);
+      const result = await fetchTraineeSummaryByManager(managerId); // Use your API
+      console.log("Trainee API Result:", result);
 
-      // const formatted = (result.data || []).map(t => ({
-      //   id: t.traineeId,
-      //   name: t.name || "Unknown",
-      //   email: t.email || "N/A",
-      //   progressPercentage: t.completionPercentage || 0,
-      //   lastInterviewDate: t.lastAssessmentDate || null,
-      //   // interviewStatus: t.interviewStatus || "due",
-      //   // priority: t.priority || "medium"
-      // }));
+      if (!result?.data) {
+        setTrainees([]);
+        return;
+      }
 
-      const formatted = (result.data || []).map(t => ({
-        id: t.trngid,
-        name: `${t.firstname} ${t.lastname}`,
-        email: t.emailid,
-        phone: t.phonenumber,
-        designation: t.designation,
-        manager: t.managerData?.username || "No Manager"
+      // Map API response to format suitable for TraineeSelectionPanel
+      const formatted = result.data.map(t => ({
+        id: t.traineeId,
+        name: t.name,
+        email: t.email,
+        progressPercentage: t.completionPercentage || 0,
+        lastInterviewDate: t.lastAssessmentDate !== "N/A" ? t.lastAssessmentDate : null,
+        interviewStatus: t.interviewStatus === null ? "due" : (t.interviewStatus ? "completed" : "due"),
+        lastAssessmentScore: t.lastAssessmentScore || 0
       }));
 
-
-      console.log("hsjjjjjjjjjd", formatted);
+      console.log("Formatted Trainees:", formatted);
       setTrainees(formatted);
 
     } catch (error) {

@@ -448,7 +448,7 @@
 // export default AssessmentEntry;
 
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import NavigationBreadcrumb from '../../components/ui/NavigationBreadcrumb';
@@ -472,6 +472,16 @@ const AssessmentEntry = () => {
   const [historyAssessments, setHistoryAssessments] = useState([]);
   // Mock data for trainees
   const [trainees, setTrainees] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const [assessments, setAssessments] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+
+  const triggerReload = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
 
   // const mockTrainees = [
   //   {
@@ -627,17 +637,17 @@ const AssessmentEntry = () => {
         const res = await fetchTraineeSummaryByManager(managerId);
 
         const normalizedTrainees = (res.data || []).map(t => ({
-          trngid: t.traineeId,          // 🔥 IMPORTANT
+          trngid: t.traineeId,
           traineeId: t.traineeId,
           name: t.name,
           email: t.email,
-          currentStep: t.currentStep,  // "Step 1"
           completionPercentage: t.completionPercentage,
           interviewStatus: t.interviewStatus,
           lastAssessmentDate: t.lastAssessmentDate,
           lastAssessmentScore: t.lastAssessmentScore,
-          subtopics: t.subtopics
+          syllabusProgress: t.syllabusProgress || []   // keep the full syllabus
         }));
+
 
         setTrainees(normalizedTrainees);
         console.log("Normalized trainees:", normalizedTrainees);
@@ -657,6 +667,18 @@ const AssessmentEntry = () => {
       handleTraineeSelect(interview.trainees[0]);
     }
   }, [interview]);
+
+  useEffect(() => {
+    if (!selectedTrainee?.trngid) return;
+
+    const loadAssessments = async () => {
+      const data = await getTraineeAssessments(selectedTrainee.trngid);
+      setHistoryAssessments(data);
+    };
+
+    loadAssessments();
+  }, [selectedTrainee, refreshKey]);
+
 
   // const handleTraineeSelect = async (trainee) => {
   //   console.log('Selected trainee:', trainee);
@@ -754,9 +776,39 @@ const AssessmentEntry = () => {
     navigate('/');
   };
 
+  // const getTraineeAssessments = async (traineeId) => {
+  //   try {
+  //     // In real implementation, fetch assessments from API
+  //     const response = await fetchAssessmentsByTrainee(traineeId);
+  //     console.log('Fetched assessments for trainee:', response);
+
+  //     const normalized = (response.data ?? []).map(a => ({
+  //       assessmentId: a.assessmentId,
+  //       date: a.assessmentDate ?? null,
+  //       type: a.assessmentType ?? '',
+  //       marks: Number(a.marks ?? 0),
+  //       maxMarks: Number(a.maxMarks ?? 0),
+  //       percentage: Number(a.percentage ?? 0),
+  //       remarks: a.remarks ?? '',
+  //       strengths: a.strengths ?? '',
+  //       improvements: a.improvements ?? '',
+  //       recommendations: a.recommendations ?? '',
+
+  //       submittedAt: a.submittedAt,
+  //       currentStep: a.subTopics,
+  //       user: a.user
+  //     }))
+  //       .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+  //     console.log('Normalized assessments:', normalized);
+  //     return normalized || [];
+  //   } catch (err) {
+  //     console.error("Error fetching assessments for trainee:", err);
+  //   }
+  //   // return mockAssessments?.[traineeId] || [];
+  // };
+
   const getTraineeAssessments = async (traineeId) => {
     try {
-      // In real implementation, fetch assessments from API
       const response = await fetchAssessmentsByTrainee(traineeId);
       console.log('Fetched assessments for trainee:', response);
 
@@ -771,18 +823,19 @@ const AssessmentEntry = () => {
         strengths: a.strengths ?? '',
         improvements: a.improvements ?? '',
         recommendations: a.recommendations ?? '',
-
         submittedAt: a.submittedAt,
-        currentStep: a.subTopics,
+        // Fix: Ensure this key matches what the Modal expects
+        subTopics: a.subTopics,
         user: a.user
-      }));
-      console.log('Normalized assessments:', normalized);
+      }))
+        .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+
       return normalized || [];
     } catch (err) {
       console.error("Error fetching assessments for trainee:", err);
     }
-    // return mockAssessments?.[traineeId] || [];
   };
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -850,6 +903,8 @@ const AssessmentEntry = () => {
               <AssessmentForm
                 trainee={selectedTrainee}
                 // onSave={handleSaveAssessment}
+
+                onSuccess={triggerReload}
                 assessmentFormData={interview || null}
                 onSaveDraft={handleSaveDraft}
                 onCancel={handleCancel}
@@ -906,6 +961,7 @@ const AssessmentEntry = () => {
       <AssessmentDetailsModal
         assessment={selectedAssessment}
         trainee={selectedTrainee}
+
         isOpen={showDetailsModal}
         onClose={() => setShowDetailsModal(false)}
         onEdit={handleEditAssessment}

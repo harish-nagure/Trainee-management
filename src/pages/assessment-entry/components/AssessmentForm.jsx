@@ -453,7 +453,7 @@ import { fetchCompletedSubTopics } from '../../../api_service';
 
 const AssessmentForm = ({
   trainee,
-  onSave,
+  onSuccess,
   onSaveDraft,
   onCancel,
   assessmentFormData,
@@ -487,6 +487,7 @@ const AssessmentForm = ({
 
   const [syllabusData, setSyllabusData] = useState([]);
   const [completedSubTopics, setCompletedSubTopics] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
 
   const assessmentTypeOptions = [
@@ -497,23 +498,23 @@ const AssessmentForm = ({
   ];
 
   useEffect(() => {
-  if (!assessmentFormData) return;
+    if (!assessmentFormData) return;
 
-  const subTopics =
-    typeof assessmentFormData?.rawItems?.[0]?.interviewSchedule?.subTopics === "string"
-      ? assessmentFormData.rawItems[0].interviewSchedule.subTopics
+    const subTopics =
+      typeof assessmentFormData?.rawItems?.[0]?.interviewSchedule?.subTopics === "string"
+        ? assessmentFormData.rawItems[0].interviewSchedule.subTopics
           .split("|")
           .map(Number)
-      : [];
+        : [];
 
-  setFormData(prev => ({
-    ...prev,
-    subTopicIds: subTopics,
-    interviewDone: true
-  }));
+    setFormData(prev => ({
+      ...prev,
+      subTopicIds: subTopics,
+      interviewDone: true
+    }));
 
-  setSelectedSubTopics(subTopics);
-}, [assessmentFormData]);
+    setSelectedSubTopics(subTopics);
+  }, [assessmentFormData]);
 
 
   // Auto-save functionality
@@ -554,18 +555,18 @@ const AssessmentForm = ({
   };
 
   useEffect(() => {
-  if (!syllabusData.length || selectedSubTopics.length === 0) return;
+    if (!syllabusData.length || selectedSubTopics.length === 0) return;
 
-  const matchedSyllabusTitles = syllabusData
-    .filter(syllabus =>
-      syllabus.subTopics.some(subTopic =>
-        selectedSubTopics.includes(subTopic.subTopicId)
+    const matchedSyllabusTitles = syllabusData
+      .filter(syllabus =>
+        syllabus.subTopics.some(subTopic =>
+          selectedSubTopics.includes(subTopic.subTopicId)
+        )
       )
-    )
-    .map(syllabus => syllabus.title);
+      .map(syllabus => syllabus.title);
 
-  setSelectedSyllabus(matchedSyllabusTitles);
-}, [syllabusData, selectedSubTopics]);
+    setSelectedSyllabus(matchedSyllabusTitles);
+  }, [syllabusData, selectedSubTopics]);
 
 
   // ✅ helper function – syllabus + subtopic filtering
@@ -641,6 +642,25 @@ const AssessmentForm = ({
     return Object.keys(newErrors)?.length === 0;
   };
 
+  const getSubtopicInfo = (trainee, options = { type: 'last' }) => {
+    // Flatten all subTopics from all syllabusProgress
+    const allSubTopics = trainee.syllabusProgress.flatMap(sp => sp.subTopics || []);
+    if (!allSubTopics.length) return 'N/A';
+
+    if (options.type === 'all') {
+      // Return array of subtopic names
+      return allSubTopics.map(st => st.name).join(', ');
+    }
+
+    // Default: get last subtopic based on stepNumber
+    const lastSubTopic = allSubTopics.reduce((prev, current) =>
+      prev.stepNumber < current.stepNumber ? current : prev
+    );
+
+    return lastSubTopic ? `Step  ${lastSubTopic.name}` : 'N/A';
+    //return lastSubTopic ? `Step ${lastSubTopic.stepNumber}: ${lastSubTopic.name}` : 'N/A';
+  };
+
   const handleSubmit = async (isDraft = false) => {
     if (!isDraft && !validateForm()) {
       return;
@@ -667,8 +687,15 @@ const AssessmentForm = ({
 
 
       alert("Assessment saved successfully!");
+
       // setIsLoading(false);
       resetForm();
+      if (onSuccess) {
+        onSuccess();
+      }
+
+
+
     } catch (error) {
       console.error('Error submitting assessment:', error);
     }
@@ -844,9 +871,14 @@ const AssessmentForm = ({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-foreground">Assessment Entry</h2>
-            <p className="text-sm text-muted-foreground">
+            {/* <p className="text-sm text-muted-foreground">
               Assessing: {trainee?.username} (Step {trainee?.currentStep})
+            </p> */}
+
+            <p className="text-sm text-muted-foreground">
+              Assessing: {trainee?.username} {getSubtopicInfo(trainee)}
             </p>
+
           </div>
           <div className="flex items-center space-x-2">
             {autoSaveStatus && (

@@ -4,7 +4,7 @@ import Button from "../../../components/ui/Button";
 import PdfViewer from "./PdfViewer";
 import { startSubTopic, completeSubTopic } from "../../../api_service";
 
-const ContentDisplay = ({ currentStep, traineeInfo, onStepComplete, onNextStep, onPreviousStep, canGoNext, canGoPrevious, canComplete }) => {
+const ContentDisplay = ({ currentStep, traineeInfo, onStepComplete, onNextStep, onPreviousStep, canGoNext, canGoPrevious, canComplete, onRefresh }) => {
   const [timeSpent, setTimeSpent] = useState(0);
   const [startTime] = useState(Date.now());
   const [currentSubIndex, setCurrentSubIndex] = useState(0);
@@ -122,6 +122,7 @@ const ContentDisplay = ({ currentStep, traineeInfo, onStepComplete, onNextStep, 
         complete: true,
         checker: false, // ❗ important
       });
+      onRefresh?.();
     } catch (err) {
       console.error("Complete subtopic failed:", err);
     }
@@ -147,6 +148,8 @@ const ContentDisplay = ({ currentStep, traineeInfo, onStepComplete, onNextStep, 
 
     setShowCompletionModal(false);
     onStepComplete(currentStep?.id);
+
+    onRefresh?.();
   };
 
 

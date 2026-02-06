@@ -665,9 +665,91 @@ const ManagerDashboard = () => {
   // };
 
 
+  // const fetchTrainees = async () => {
+  //   try {
+  //     const managerUserId = sessionStorage.getItem("userId"); // adjust if different
+
+  //     if (!managerUserId) {
+  //       console.warn("Manager UserId not found");
+  //       return;
+  //     }
+
+  //     const response = await fetchTraineeSummaryByManager(managerUserId);
+
+  //     // API returns: ApiResponse → expected { data: [...] }
+  //     const traineeList = Array.isArray(response?.data)
+  //       ? response.data
+  //       : Array.isArray(response?.trainees)
+  //         ? response.trainees
+  //         : [];
+
+  //     console.log("Fetched trainee summary:", traineeList);
+
+  //     setTrainees(traineeList);
+  //     setFilteredTrainees(traineeList);
+
+  //   } catch (err) {
+  //     console.error("Error fetching trainee summary:", err);
+  //     setTrainees([]);
+  //     setFilteredTrainees([]);
+  //   }
+  // };
+
+  // const fetchTrainees = async () => {
+  //   try {
+  //     const managerUserId = sessionStorage.getItem("userId");
+
+  //     if (!managerUserId) {
+  //       console.warn("Manager UserId not found");
+  //       return;
+  //     }
+
+  //     const response = await fetchTraineeSummaryByManager(managerUserId);
+
+  //     const traineeList = Array.isArray(response?.data)
+  //       ? response.data
+  //       : [];
+
+  //     // 🔥 TRANSFORM DATA FOR UI
+  //     const transformedList = traineeList.map((trainee) => {
+  //       let lastSubTopicName = "Not Started";
+  //       let lastStepNumber = -1;
+
+  //       trainee?.syllabusProgress?.forEach((syllabus) => {
+  //         syllabus?.subTopics?.forEach((sub) => {
+  //           const isCompleted = sub?.stepProgress?.some(
+  //             (sp) => sp?.complete === true
+  //           );
+
+  //           if (isCompleted && sub.stepNumber > lastStepNumber) {
+  //             lastStepNumber = sub.stepNumber;
+  //             lastSubTopicName = sub.name;
+  //           }
+  //         });
+  //       });
+
+  //       return {
+  //         ...trainee,
+  //         currentStep: lastSubTopicName, // ✅ CURRENT STEP = LAST SUBTOPIC NAME
+  //       };
+  //     });
+
+  //     console.log("Transformed trainee summary:", transformedList);
+
+  //     setTrainees(transformedList);
+  //     setFilteredTrainees(transformedList);
+
+  //   } catch (err) {
+  //     console.error("Error fetching trainee summary:", err);
+  //     setTrainees([]);
+  //     setFilteredTrainees([]);
+  //   }
+  // };
+
+
   const fetchTrainees = async () => {
     try {
-      const managerUserId = sessionStorage.getItem("userId"); // adjust if different
+      const managerUserId = sessionStorage.getItem("userId");
 
       if (!managerUserId) {
         console.warn("Manager UserId not found");
@@ -676,17 +758,37 @@ const ManagerDashboard = () => {
 
       const response = await fetchTraineeSummaryByManager(managerUserId);
 
-      // API returns: ApiResponse → expected { data: [...] }
-      const traineeList = Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response?.trainees)
-          ? response.trainees
-          : [];
+      const traineeList = Array.isArray(response?.data) ? response.data : [];
 
-      console.log("Fetched trainee summary:", traineeList);
+      // 🔥 TRANSFORM DATA FOR UI
+      const transformedList = traineeList.map((trainee) => {
+        const subtopics = []; // collect all subtopic names
+        let lastSubTopicName = "Not Started";
+        let lastStepNumber = -1;
 
-      setTrainees(traineeList);
-      setFilteredTrainees(traineeList);
+        trainee?.syllabusProgress?.forEach((syllabus) => {
+          syllabus?.subTopics?.forEach((sub) => {
+            subtopics.push(sub.name); // collect name in array
+            const isCompleted = sub?.stepProgress?.some(sp => sp?.complete === true);
+
+            if (isCompleted && sub.stepNumber > lastStepNumber) {
+              lastStepNumber = sub.stepNumber;
+              lastSubTopicName = sub.name;
+            }
+          });
+        });
+
+        return {
+          ...trainee,
+          subtopics,               // ✅ array of all subtopics
+          currentStep: lastSubTopicName, // ✅ last completed subtopic
+        };
+      });
+
+      console.log("Transformed trainee summary:", transformedList);
+
+      setTrainees(transformedList);
+      setFilteredTrainees(transformedList);
 
     } catch (err) {
       console.error("Error fetching trainee summary:", err);
@@ -694,6 +796,7 @@ const ManagerDashboard = () => {
       setFilteredTrainees([]);
     }
   };
+
 
 
   const fetchAllSyllabus = async () => {
@@ -928,6 +1031,7 @@ const ManagerDashboard = () => {
     navigate(`/interview-scheduling?trainee=${traineeId}`);
   };
 
+
   const handleExportReports = () => {
     // Mock export functionality
     const exportData = {
@@ -964,6 +1068,7 @@ const ManagerDashboard = () => {
 
   const handleBulkScheduleInterview = () => {
     if (selectedTrainees?.length === 0) {
+
       alert('Please select trainees to schedule interviews');
       return;
     }

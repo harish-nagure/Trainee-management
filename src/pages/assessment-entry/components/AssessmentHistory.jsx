@@ -210,7 +210,7 @@ const AssessmentHistory = ({
   // ✅ Ensure assessments is always an array
   const safeAssessments = Array.isArray(assessments) ? assessments : [];
 
-  console.log('Safe assessments:', safeAssessments, assessments,trainee);
+  console.log('Safe assessments:', safeAssessments, assessments, trainee);
   const [sortBy, setSortBy] = useState('date');
   const [filterType, setFilterType] = useState('');
 
@@ -229,7 +229,9 @@ const AssessmentHistory = ({
   ];
 
   const sortedAssessments = [...safeAssessments]
-    .filter(a => !filterType || a?.type === filterType)
+    // .filter(a => !filterType || a?.type === filterType)
+    .filter(a => !filterType || a?.type === filterType || a?.assessmentType === filterType)
+
     .sort((a, b) => {
       switch (sortBy) {
         case 'date':
@@ -282,7 +284,7 @@ const AssessmentHistory = ({
     );
   }
 
-  
+
 
   return (
     <div className={`bg-card border border-border rounded-lg ${className}`}>
