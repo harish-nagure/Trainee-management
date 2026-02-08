@@ -33,45 +33,6 @@ const TraineeDashboard = () => {
 
 
 
-  // const [traineeInfo] = useState({
-  //   name: 'John Doe',
-  //   id: 'TRN001',
-  //   email: 'john.doe@company.com',
-  //   startDate: '2024-10-01',
-  //   program: 'Software Development Training'
-  // });
-
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const empId = traineeInfo.id;
-
-  //       // 1) Syllabus data
-  //       const syllabusRes = await fetch(`http://localhost:8080/syllabus/all`);
-  //       const syllabusData = await syllabusRes.json();
-  //       setSyllabus(syllabusData);
-
-  //       // 2) Steps progress data
-  //       const stepsRes = await fetch(`http://localhost:8080/steps/${empId}`);
-  //       const stepsData = await stepsRes.json();
-  //       setStepsStatus(stepsData);
-
-  //       // 3) Overall progress
-  //       const overallRes = await fetch(`http://localhost:8080/overall/${empId}`);
-  //       const overallData = await overallRes.json();
-  //       setOverall(overallData.overallProgress);
-
-  //       setIsLoading(false);
-  //     } catch (err) {
-  //       console.error("Error loading dashboard:", err);
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
-
   useEffect(() => {
     const loadTraineeInfo = async () => {
       try {
@@ -96,22 +57,7 @@ const TraineeDashboard = () => {
     loadTraineeInfo();
   }, []);
 
-  // useEffect(() => {
-  //   const loadData = async () => {
-  //     try {
-  //       const empId = sessionStorage.getItem("empid") || "TRN001";
 
-  //       // 🔥 Interview schedule API call
-  //       const schedule = await fetchInterviewScheduleByEmpId(empId);
-  //       setInterviews(schedule);
-
-  //     } catch (err) {
-  //       console.error("Error loading dashboard:", err);
-  //     }
-  //   };
-
-  //   loadData();
-  // }, []);
 
 
   useEffect(() => {
@@ -119,12 +65,11 @@ const TraineeDashboard = () => {
       try {
         const empId = sessionStorage.getItem("empid");
 
-        // 🔥 Interview schedule API call
+        // Interview schedule API call
         const response = await fetchInterviewScheduleByEmpId(empId);
 
         console.log("Fetched interview schedule response:", response);
         if (response?.data) {
-          // API returns: { status, success, message, data:[ ... ] }
 
 
 
@@ -171,7 +116,7 @@ const TraineeDashboard = () => {
         const empId = sessionStorage.getItem("empid");
         if (!empId) return;
 
-        // 2️⃣ Fetch assessments
+        //  Fetch assessments
         const assessmentRes = await fetchAssessmentsByTrainee(empId);
         const list = Array.isArray(assessmentRes.data) ? assessmentRes.data : [];
 
@@ -276,13 +221,13 @@ const TraineeDashboard = () => {
         setSyllabusProgress(sortedData);
 
         const formattedSteps = sortedData.map((item, index, arr) => {
-          // ✔ current step completed
+          //  current step completed
           const isCompleted = item?.subTopics?.every(sub =>
             sub?.stepProgress?.some(p => p.complete === true && p.checker === true)
           );
 
 
-          // ✔ previous step completed
+          //  previous step completed
           const prevCompleted =
             index === 0
               ? true
@@ -404,14 +349,6 @@ const TraineeDashboard = () => {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
             {/* Left Column - Main Content */}
             <div className="xl:col-span-2 space-y-8">
-              {/* Progress Tracker */}
-              {/* <ProgressTracker
-                // currentStep={currentStep}
-                // totalSteps={8}
-                // completedSteps={stepsStatus.filter(s => s.completed).length}
-                onStepClick={handleStepClick}
-                stepsStatus={stepsStatus}
-              /> */}
 
               <ProgressTracker
                 stepsStatus={stepsStatus}
@@ -421,14 +358,6 @@ const TraineeDashboard = () => {
               />
 
 
-              {/* Current Step Content */}
-              {/* <CurrentStepContent
-                currentStep={currentStep}
-                traineeInfo={traineeInfo}
-                onStepComplete={handleStepComplete}
-                syllabus={syllabus}
-                stepsStatus={stepsStatus}
-              /> */}
 
               {/* Assessment History */}
               <AssessmentHistory
@@ -438,8 +367,6 @@ const TraineeDashboard = () => {
 
             {/* Right Column - Sidebar */}
             <div className="space-y-8">
-              {/* Quick Actions */}
-              {/* <QuickActions /> */}
 
               {/* Interview Schedule */}
               <InterviewSchedule interviews={interviews} />
@@ -480,50 +407,7 @@ const TraineeDashboard = () => {
                 </div>
               </div>
 
-              {/* Help & Support Card */}
-              {/* <div className="bg-card rounded-lg border border-border p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
-                  <Icon name="HelpCircle" size={20} className="mr-2 text-primary" />
-                  Need Help?
-                </h3>
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">
-                    Get assistance with your training program
-                  </p>
-                  <div className="space-y-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      iconName="MessageSquare"
-                      iconPosition="left"
-                      iconSize={14}
-                      fullWidth
-                    >
-                      Ask a Question
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      iconName="Book"
-                      iconPosition="left"
-                      iconSize={14}
-                      fullWidth
-                    >
-                      Training Guide
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      iconName="Phone"
-                      iconPosition="left"
-                      iconSize={14}
-                      fullWidth
-                    >
-                      Contact Support
-                    </Button>
-                  </div>
-                </div>
-              </div> */}
+
             </div>
           </div>
         </div>

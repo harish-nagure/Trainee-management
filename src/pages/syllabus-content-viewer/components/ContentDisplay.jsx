@@ -69,43 +69,11 @@ const ContentDisplay = ({ currentStep, traineeInfo, onStepComplete, onNextStep, 
   }, [currentSubIndex, currentStep?.id, subTopics, empid]);
 
 
-  // const markSubtopicCompleted = async () => {
-  //   if (!sub || sub.managerDecision === false) return;
-
-  //   // create a new array to trigger re-render
-  //   const updated = subTopics.map((s, i) =>
-  //     i === currentSubIndex ? { ...s, completed: true } : s
-  //   );
-
-  //   // update state in parent step
-  //   currentStep.topics[0].subTopics = updated; // optional, or use setState if step is in state
-
-  //   try {
-  //     await completeSubTopic({
-  //       empid,
-  //       subtopicId: sub.id,
-  //       endtimeSeconds: Math.floor(Date.now() / 1000),
-  //       complete: true,
-  //       checker: false,
-  //     });
-  //   } catch (err) {
-  //     console.error("Complete subtopic failed:", err);
-  //   }
-  // };
-
-  //  const  markSubtopicCompleted = async () => {
-  //     if (!sub || sub.managerDecision === false) return;
-  //     const updated = subTopics.map((s, i) => i === currentSubIndex ? { ...s, completed: true } : s);
-  //     currentStep.topics[0].subTopics = updated;
-  //     try {
-  //       await completeSubTopic({ empid, subtopicId: sub.id, endtimeSeconds: Math.floor(Date.now() / 1000), complete: true, checker: false });
-  //     } catch (err) { console.error("Complete subtopic failed:", err); }
-  //   };
 
   const markSubtopicCompleted = async () => {
     if (!sub) return;
 
-    // 🔒 checker true → kuch mat karo
+    //  checker true → kuch mat karo
     if (sub.managerDecision === true) return;
 
     // UI update (only completed)
@@ -120,7 +88,7 @@ const ContentDisplay = ({ currentStep, traineeInfo, onStepComplete, onNextStep, 
         subtopicId: sub.id,
         endtimeSeconds: Math.floor(Date.now() / 1000),
         complete: true,
-        checker: false, // ❗ important
+        checker: false, //  important
       });
       onRefresh?.();
     } catch (err) {
@@ -138,7 +106,7 @@ const ContentDisplay = ({ currentStep, traineeInfo, onStepComplete, onNextStep, 
 
   const prevSub = () => currentSubIndex > 0 ? setCurrentSubIndex(currentSubIndex - 1) : onPreviousStep();
   const handleCompleteStep = () => { if (completedSubs === totalSubs) onStepComplete(currentStep?.id); else setShowCompletionModal(true); };
-  // const confirmCompletion = () => { setShowCompletionModal(false); onStepComplete(currentStep?.id); };
+
 
   const confirmCompletion = async () => {
     // last subtopic complete karo
@@ -221,41 +189,14 @@ const ContentDisplay = ({ currentStep, traineeInfo, onStepComplete, onNextStep, 
             {currentSubIndex === 0 ? "Previous Step" : "Previous Topic"}
           </Button>
           <div className="flex items-center space-x-3">
-            {/* <Button variant="success" onClick={() => { if (!sub?.completed) markSubtopicCompleted(); if (isLastSub) handleCompleteStep(); }} iconName="CheckCircle" iconPosition="left" disabled={!sub?.managerDecision}>
-              {!sub?.completed ? "Mark as Completed" : isLastSub ? "Complete Step" : "Mark as Completed"}
-            </Button> */}
-            {/* <Button
-              variant="success"
-              iconName="CheckCircle"
-              iconPosition="left"
-              disabled={!sub?.managerDecision}
-              onClick={async () => {
 
-                // 🔹 LAST SUBTOPIC → sirf popup
-                if (isLastSub) {
-                  setShowCompletionModal(true);
-                  return;
-                }
-
-                // 🔹 NORMAL SUBTOPIC → direct complete
-                if (!sub?.completed) {
-                  await markSubtopicCompleted();
-                }
-              }}
-            >
-              {!sub?.completed
-                ? "Mark as Completed"
-                : isLastSub
-                  ? "Complete Step"
-                  : "Mark as Completed"}
-            </Button> */}
 
             <Button
               variant="success"
               iconName="CheckCircle"
               iconPosition="left"
 
-              // ✅ checker true hua to disable
+              // checker true hua to disable
               disabled={sub?.managerDecision === true}
 
               onClick={async () => {
@@ -283,9 +224,6 @@ const ContentDisplay = ({ currentStep, traineeInfo, onStepComplete, onNextStep, 
 
 
 
-            {/* <Button variant="default" onClick={nextSub} iconName="ChevronRight" iconPosition="right" disabled={!sub?.completed || !sub?.managerDecision || isLastSubOfLastStep}>
-              {isLastSub ? (isLastStep ? "Next Step" : "Next Step") : "Next Topic"}
-            </Button> */}
 
             <Button
               variant="default"
@@ -293,8 +231,8 @@ const ContentDisplay = ({ currentStep, traineeInfo, onStepComplete, onNextStep, 
               iconName="ChevronRight"
               iconPosition="right"
               disabled={
-                !sub?.completed ||          // ❌ not completed
-                !sub?.managerDecision ||    // ❌ checker false
+                !sub?.completed ||          //  not completed
+                !sub?.managerDecision ||    //  checker false
                 isLastSubOfLastStep
               }
             >

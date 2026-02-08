@@ -14,7 +14,7 @@ const TraineeSelectionPanel = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
-console.log("trainees in panel",trainees);
+  console.log("trainees in panel", trainees);
   const statusOptions = [
     { value: 'all', label: 'All Status' },
     { value: 'due', label: 'Due for Interview' },
@@ -133,21 +133,7 @@ console.log("trainees in panel",trainees);
             className="w-full"
           />
 
-            {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Select
-                placeholder="Filter by status"
-                options={statusOptions}
-                value={statusFilter}
-                onChange={setStatusFilter}
-              />
 
-              <Select
-                placeholder="Filter by priority"
-                options={priorityOptions}
-                value={priorityFilter}
-                onChange={setPriorityFilter}
-              />
-            </div> */}
         </div>
 
         {/* Selection Summary */}
@@ -157,15 +143,7 @@ console.log("trainees in panel",trainees);
               <span className="text-sm font-medium text-primary">
                 {selectedTrainees?.length} trainee{selectedTrainees?.length > 1 ? 's' : ''} selected
               </span>
-              {/* <Button
-                variant="default"
-                size="sm"
-                onClick={() => onBulkSelect(selectedTrainees)}
-                iconName="Calendar"
-                iconSize={16}
-              >
-                Bulk Schedule
-              </Button> */}
+
             </div>
           </div>
         )}
@@ -191,12 +169,12 @@ console.log("trainees in panel",trainees);
                     {/* Selection Checkbox */}
                     <div className="mt-1">
                       <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${isTraineeSelected(trainee?.id)
-                          ? 'bg-primary border-primary' : 'border-border'
+                        ? 'bg-primary border-primary' : 'border-border'
                         }`}>
                         {isTraineeSelected(trainee?.id) && (
                           <Icon name="Check" size={12} className="text-primary-foreground" />
                         )}
-                        
+
                       </div>
                     </div>
 
@@ -206,7 +184,7 @@ console.log("trainees in panel",trainees);
                         <h4 className="text-sm font-medium text-foreground truncate">
                           {trainee?.name}
                         </h4>
-                        {/* {getPriorityIcon(trainee?.priority)} */}
+
                       </div>
 
                       <p className="text-xs text-muted-foreground mb-2 truncate">

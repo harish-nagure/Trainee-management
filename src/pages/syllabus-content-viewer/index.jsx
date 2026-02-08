@@ -146,32 +146,13 @@ const SyllabusContentViewer = () => {
     }
   };
 
-  // imp
-  // useEffect(() => {
-  //   document.addEventListener('contextmenu', handleContextMenu);
-  //   document.addEventListener('selectstart', handleSelectStart);
-  //   document.addEventListener('keydown', handleKeyDown);
-  //   return () => {
-  //     document.removeEventListener('contextmenu', handleContextMenu);
-  //     document.removeEventListener('selectstart', handleSelectStart);
-  //     document.removeEventListener('keydown', handleKeyDown);
-  //   };
-  // }, []);
 
   const handleStepSelect = (stepId) => {
     const step = syllabusSteps?.find((s) => s?.id === stepId);
     if (step && !step?.isLocked) setCurrentStepId(stepId);
   };
 
-  // const handleCompleteStep = (stepId) => {
-  //   setSyllabusSteps(prevSteps => prevSteps.map((step, index) => {
 
-  //     if (step.id === stepId) return { ...step, isCompleted: true, progress: 100, completedAt: new Date().toISOString() };
-  //     const prevIndex = prevSteps.findIndex(s => s.id === stepId);
-  //     if (index === prevIndex + 1) return { ...step, isLocked: false };
-  //     return step;
-  //   }));
-  // };
 
   const handleCompleteStep = (stepId) => {
     setSyllabusSteps(prevSteps => prevSteps.map((step, index) => {
@@ -196,22 +177,7 @@ const SyllabusContentViewer = () => {
     }));
   };
 
-  //   setSyllabusSteps(prevSteps => prevSteps.map((step) => {
-  //     if (step.id === stepId) {
-  //       const stepCompleted = step.topics[0]?.subTopics?.length > 0
-  //         ? step.topics[0].subTopics.every(sub => sub.managerDecision)
-  //         : false;
 
-  //       return {
-  //         ...step,
-  //         isCompleted: stepCompleted,
-  //         progress: 100,
-  //         completedAt: new Date().toISOString()
-  //       };
-  //     }
-  //     return step;
-  //   }));
-  // };
 
   const handleNextStep = () => {
     if (currentStepIndex < syllabusSteps?.length - 1) {

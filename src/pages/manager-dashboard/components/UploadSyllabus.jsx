@@ -48,10 +48,6 @@ const UploadSyllabus = ({ onCancel }) => {
             console.error("Failed to fetch trainers", err);
         }
     };
-    // useEffect(() => {
-    //     loadAll();
-    //     loadTrainers();
-    // }, []);
 
     useEffect(() => {
         loadAll();
@@ -87,13 +83,7 @@ const UploadSyllabus = ({ onCancel }) => {
         }));
     };
 
-    // const deleteSubTopic = (index) => {
 
-    //     if (!window.confirm("This will permanently delete this subtopic. Continue?")) return;
-    //     const updated = [...formData.subTopics];
-    //     updated.splice(index, 1);
-    //     setFormData((prev) => ({ ...prev, subTopics: updated }));
-    // };
 
     const handleDeleteSyllabus = async (syllabusId) => {
         if (!window.confirm("This will permanently delete this syllabus and all its subtopics. Continue?")) return;
@@ -102,7 +92,7 @@ const UploadSyllabus = ({ onCancel }) => {
             await deleteSyllabusAPI(syllabusId);
             alert("Syllabus deleted successfully!");
             triggerReload();
-            //await loadAll(); // Refresh the syllabus list
+
         } catch (err) {
             console.error(err);
             alert("Failed to delete syllabus");
@@ -130,12 +120,7 @@ const UploadSyllabus = ({ onCancel }) => {
         }
     }
 
-    // const interviewerOptions = Array.isArray(trainerList)
-    //     ? (trainerList).map((t) => ({
-    //         value: t.trainerId,
-    //         label: `${t.name}${t.title ? " - " + t.title : ""}`,
-    //     }))
-    //     : [];
+
 
     console.log(trainerList)
     const interviewerOptions = Array.isArray(trainerList)
@@ -164,60 +149,7 @@ const UploadSyllabus = ({ onCancel }) => {
         navigate('/');
     };
 
-    // const handleSubmit = async () => {
-    //     if (!validateForm()) return;
-    //     setLoading(true);
 
-    //     try {
-    //         const fd = new FormData();
-    //         fd.append("title", formData.title);
-    //         fd.append("topic", formData.topic);
-
-
-    //         formData.subTopics.forEach((sub, i) => {
-    //             console.log("Appending subtopic:", sub);
-    //             fd.append(`subTopics[${i}].name`, sub.name);
-    //             fd.append(`subTopics[${i}].description`, sub.description);
-
-    //             if (sub.file instanceof File) {
-    //                 fd.append(`subTopics[${i}].file`, sub.file, sub.file.name);
-    //             } else if (typeof sub.file === "string") {
-    //                 // send existing file path so backend knows to keep it
-    //                 fd.append(`subTopics[${i}].filePath`, sub.file);
-    //             }
-    //         });
-
-
-    //         // console.log(fd);
-    //         // console.log(formData);
-    //         let res;
-    //         if (editingId) {
-    //             res = await updateSyllabusAPI(editingId, fd);
-    //             setSyllabusList(prev => prev.map(it => it.id === editingId ? res.data : it));
-    //             alert("Updated Successfully!");
-    //         } else {
-    //             console.log(formData);
-    //             res = await uploadSyllabusAPI(formData);
-    //             setSyllabusList(prev => [...prev, res.data]);
-    //             alert("Uploaded Successfully!");
-
-    //         }
-
-    //         // reset form
-    //         setEditingId(null);
-    //         // setFormData({
-    //         //     title: "",
-
-    //         //     topic: "",
-    //         //     subTopics: [{ name: "", description: "", file: null }],
-    //         // });
-    //     } catch (err) {
-    //         console.error("Upload error", err);
-    //         alert(err?.response?.data || err.message || "Upload failed");
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
 
 
     const handleSubmit = async () => {
@@ -230,13 +162,13 @@ const UploadSyllabus = ({ onCancel }) => {
                 title: formData.title,
                 topic: formData.topic,
                 durationInDays: Number(formData.durationInDays),
-                //subTopics: formData.subTopics.map(st => ({ name: st.name, description: st.description }))
+
                 subTopics: formData.subTopics.map(st => ({
                     id: st.id,
                     name: st.name,
                     description: st.description,
                     filePath: typeof st.file === "string" ? st.file : null,
-                    // manager_id: st.userid ? { userid: st.userid } : null
+
                     manager: st.managerId ? { trngid: st.managerId } : null
                 }))
 
@@ -244,22 +176,10 @@ const UploadSyllabus = ({ onCancel }) => {
 
             console.log("Prepared Syllabus JSON:", syllabusJson);
 
-            // const fd = new FormData();
-            // fd.append("syllabus", new Blob([JSON.stringify(syllabusJson)], { type: "application/json" }));
 
-            // formData.subTopics.forEach(st => {
-            //     if (st.file instanceof File) {
-            //         fd.append("files", st.file, st.file.name);
-            //     }
-            // });
             const fd = new FormData();
             fd.append("syllabus", JSON.stringify(syllabusJson));
 
-            // formData.subTopics.forEach((sub, i) => {
-            //     if (sub.file && sub.file instanceof File) {
-            //         fd.append("files", sub.file);
-            //     }
-            // });
 
             formData.subTopics.forEach((sub) => {
                 if (sub.file instanceof File) {
@@ -284,7 +204,7 @@ const UploadSyllabus = ({ onCancel }) => {
                 alert("Uploaded Successfully!");
 
             }
-            //await loadAll();
+
             triggerReload();
 
 
@@ -300,29 +220,8 @@ const UploadSyllabus = ({ onCancel }) => {
     };
 
     console.log("Trainer List:", trainerList);
-    // const editSyllabus = (item) => {
-    //     setEditingId(item.id);
 
-    //     setFormData({
-    //         title: item.title,
-    //         topic: item.topic,
-    //         durationInDays: item.durationInDays,
-    //         subTopics: (item.subTopics && item.subTopics.length > 0)
-    //             ? item.subTopics.map(sub => ({
-    //                 id: sub.id,
-    //                 name: sub.name,
-    //                 description: sub.description,
-    //                 file: sub.filePath || null,
-    //                 // trainerId: sub.trainer?.trainerId || "",
-    //                 manager: sub.managerId ? { trngid: sub.managerId } : null
 
-    //                 // store the existing file path
-
-    //                 // store the existing file path
-    //             }))
-    //             : [{ name: "", description: "", file: null, managerId: "" }]
-    //     });
-    // };
 
     // 1. UPDATED EDIT LOGIC
     const editSyllabus = (item) => {
@@ -409,11 +308,10 @@ const UploadSyllabus = ({ onCancel }) => {
                 <NavigationBreadcrumb userRole="manager" />
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-10">
-                    {/* LEFT FORM */}
-                    {/* <div className="bg-white/50 backdrop-blur-lg shadow-xl rounded-2xl border border-blue-200 h-fit sticky top-24"> */}
+
                     <div className="bg-white/50 backdrop-blur-lg shadow-xl rounded-2xl border border-blue-200 sticky top-24 max-h-[calc(100vh-120px)] flex flex-col">
 
-                        {/* <div className="p-8 border-b bg-blue-100 rounded-t-2xl"> */}
+
                         <div className="p-8 border-b bg-blue-100 rounded-t-2xl flex-none">
 
                             <h2 className="text-3xl font-bold text-black">
@@ -422,7 +320,7 @@ const UploadSyllabus = ({ onCancel }) => {
                             </h2>
                         </div>
 
-                        {/* <div className="p-8 space-y-8"> */}
+
                         <div className="custom-scrollbar p-8 space-y-8 flex-1 flex flex-col overflow-y-auto">
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
@@ -447,26 +345,11 @@ const UploadSyllabus = ({ onCancel }) => {
                                     value={formData.durationInDays}
                                     onChange={(e) => handleChange("durationInDays", e.target.value)}
                                 />
-                                {/* <Input
-                                    label="Duration"
-                                    placeholder="Enter number of days"
-                                    value={
-                                        formData.durationInDays
-                                            ? `${formData.durationInDays} ${formData.durationInDays > 1 ? "Days" : "Day"}`
-                                            : ""
-                                    }
-                                    onChange={(e) => {
-                                        // Only number store karo
-                                        const val = e.target.value.replace(/\D/g, "");
-                                        handleChange("durationInDays", val);
-                                    }}
-                                />
- */}
+
 
                             </div>
 
-                            {/* SUBTOPICS */}
-                            {/* <div className="space-y-6 h-[500px] overflow-y-scroll pr-3 custom-scroll"> */}
+
                             <div className="space-y-6 flex-1 overflow-y-auto pr-3 custom-scrollbar min-h-[200px]">
 
 
@@ -477,12 +360,6 @@ const UploadSyllabus = ({ onCancel }) => {
                                 {formData.subTopics.map((sub, index) => (
                                     <div key={index} className="border p-5 rounded-xl bg-white shadow relative">
 
-                                        {/* <button
-                                            onClick={() => deleteSubTopic(index)}
-                                            className="absolute top-3 right-3 text-red-500 hover:text-red-700"
-                                        >
-                                            <Icon name="Trash2" size={22} />
-                                        </button> */}
 
                                         <button
                                             onClick={() => deleteSubTopic(index, sub.id)}
@@ -589,7 +466,7 @@ const UploadSyllabus = ({ onCancel }) => {
                                 </Button>
                             </div>
 
-                            {/* <div className="pt-6 border-t flex flex-col sm:flex-row gap-4"> */}
+
                             <div className="pt-6 border-t flex flex-col sm:flex-row gap-4 flex-none">
 
                                 <button
@@ -612,8 +489,7 @@ const UploadSyllabus = ({ onCancel }) => {
                         </div>
                     </div>
 
-                    {/* RIGHT LIST */}
-                    {/* RIGHT LIST - Updated with visible Date */}
+
                     <div className="bg-white/70 p-6 shadow-xl rounded-2xl border border-blue-200 h-fit sticky top-24">
                         <h2 className="text-2xl font-bold text-blue-700 mb-4 flex items-center gap-2">
                             <Icon name="List" size={24} className="text-blue-700" />
@@ -634,19 +510,7 @@ const UploadSyllabus = ({ onCancel }) => {
                                             <h4 className="font-semibold text-blue-900">{item.title}</h4>
                                             <p className="text-sm text-gray-600">{item.topic}</p>
 
-                                            {/* VISIBLE DATE */}
-                                            {/* <div className="flex items-center gap-1 mt-2 text-[11px] text-gray-400 font-medium">
-                                                <Icon name="Calendar" size={12} />
-                                                <span>
-                                                    {item.createdAt
-                                                        ? new Date(item.createdAt).toLocaleDateString('en-GB', {
-                                                            day: '2-digit',
-                                                            month: 'short',
-                                                            year: 'numeric'
-                                                        })
-                                                        : "N/A"}
-                                                </span>
-                                            </div> */}
+
                                         </div>
 
                                         <button
