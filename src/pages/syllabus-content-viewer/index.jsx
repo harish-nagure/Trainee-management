@@ -22,6 +22,8 @@ const SyllabusContentViewer = () => {
   const [traineeInfo, setTraineeInfo] = useState({});
   const [loading, setLoading] = useState(true);
   const [subTopicIndex, setSubTopicIndex] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
+
 
   const { state } = useLocation();
   const stepNumber = state || 1;
@@ -129,7 +131,11 @@ const SyllabusContentViewer = () => {
       }
     };
     fetchData();
-  }, [empid]);
+  }, [empid, refreshKey]);
+  const triggerReload = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
 
   // SECURITY EVENT HANDLERS
   const handleContextMenu = (e) => { e?.preventDefault(); return false; };
@@ -140,32 +146,13 @@ const SyllabusContentViewer = () => {
     }
   };
 
-  // imp
-  // useEffect(() => {
-  //   document.addEventListener('contextmenu', handleContextMenu);
-  //   document.addEventListener('selectstart', handleSelectStart);
-  //   document.addEventListener('keydown', handleKeyDown);
-  //   return () => {
-  //     document.removeEventListener('contextmenu', handleContextMenu);
-  //     document.removeEventListener('selectstart', handleSelectStart);
-  //     document.removeEventListener('keydown', handleKeyDown);
-  //   };
-  // }, []);
 
   const handleStepSelect = (stepId) => {
     const step = syllabusSteps?.find((s) => s?.id === stepId);
     if (step && !step?.isLocked) setCurrentStepId(stepId);
   };
 
-  // const handleCompleteStep = (stepId) => {
-  //   setSyllabusSteps(prevSteps => prevSteps.map((step, index) => {
 
-  //     if (step.id === stepId) return { ...step, isCompleted: true, progress: 100, completedAt: new Date().toISOString() };
-  //     const prevIndex = prevSteps.findIndex(s => s.id === stepId);
-  //     if (index === prevIndex + 1) return { ...step, isLocked: false };
-  //     return step;
-  //   }));
-  // };
 
   const handleCompleteStep = (stepId) => {
     setSyllabusSteps(prevSteps => prevSteps.map((step, index) => {
@@ -190,22 +177,7 @@ const SyllabusContentViewer = () => {
     }));
   };
 
-  //   setSyllabusSteps(prevSteps => prevSteps.map((step) => {
-  //     if (step.id === stepId) {
-  //       const stepCompleted = step.topics[0]?.subTopics?.length > 0
-  //         ? step.topics[0].subTopics.every(sub => sub.managerDecision)
-  //         : false;
 
-  //       return {
-  //         ...step,
-  //         isCompleted: stepCompleted,
-  //         progress: 100,
-  //         completedAt: new Date().toISOString()
-  //       };
-  //     }
-  //     return step;
-  //   }));
-  // };
 
   const handleNextStep = () => {
     if (currentStepIndex < syllabusSteps?.length - 1) {
@@ -250,7 +222,7 @@ const SyllabusContentViewer = () => {
           </div>
           <div className="flex-1 flex overflow-hidden">
             <div className="flex-1 overflow-hidden" ref={contentRef}>
-              <ContentDisplay currentStep={currentStep} traineeInfo={traineeInfo} onStepComplete={handleCompleteStep} onNextStep={handleNextStep} onPreviousStep={handlePreviousStep} canGoNext={canGoNext} canGoPrevious={canGoPrevious} />
+              <ContentDisplay currentStep={currentStep} traineeInfo={traineeInfo} onStepComplete={handleCompleteStep} onNextStep={handleNextStep} onPreviousStep={handlePreviousStep} canGoNext={canGoNext} canGoPrevious={canGoPrevious} onRefresh={triggerReload} />
             </div>
             {showProgressTracker && <div className="w-80 border-l border-border overflow-y-auto">
               <ProgressTracker currentStep={currentStep} totalSteps={syllabusSteps?.length} completedSteps={completedSteps} timeSpent={45} estimatedTimeRemaining={180} className="m-4" />

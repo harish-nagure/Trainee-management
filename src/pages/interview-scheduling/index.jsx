@@ -11,10 +11,10 @@ import InterviewStatusTracker from './components/InterviewStatusTracker';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 
-// import { } from "../../Api/apiAuth";
 
-import { createSchedule, assignTrainees, fetchAllTrainees, fetchAllTraineeSummary, fetchAllSchedules, updateInterviewSchedule, deleteInterviewSchedule, fetchTraineesByManagerId } from "../../api_service";
-// import { getAllTrainers, getAllTrainees } from "../../Api/apiAuth";
+
+import { createSchedule, assignTrainees, fetchAllTrainees, fetchAllTraineeSummary, fetchAllSchedules, updateInterviewSchedule, deleteInterviewSchedule, fetchTraineesByManagerId, fetchTraineeSummaryByManager } from "../../api_service";
+
 
 
 const InterviewScheduling = () => {
@@ -223,32 +223,6 @@ const InterviewScheduling = () => {
     setConflicts(foundConflicts);
   };
 
-  // Handle interview scheduling
-  // const handleScheduleInterview = async (scheduleData) => {
-  //   try {
-  //     console.log('Scheduling interview:', scheduleData);
-
-  //     // Simulate API call
-  //     await new Promise(resolve => setTimeout(resolve, 1000));
-
-  //     // Show notification preview
-  //     setShowNotificationPreview(true);
-
-  //     // Reset form
-  //     setSelectedDate(null);
-  //     setSelectedTime(null);
-  //     setSelectedTrainees([]);
-  //     setConflicts([]);
-
-  //     alert('Interview scheduled successfully!');
-  //   } catch (error) {
-  //     console.error('Scheduling error:', error);
-  //     alert('Failed to schedule interview. Please try again.');
-  //   }
-  // };
-
-
-
   const handleSchedule = async (scheduleData) => {
 
     console.log("Scheduling Data:", scheduleData);
@@ -268,21 +242,21 @@ const InterviewScheduling = () => {
       })
 
       console.log("Update Response:", updateRes);
-      alert("✅ Interview Updated Successfully!");
+      alert(" Interview Updated Successfully!");
 
       try {
 
       } catch (error) {
         console.error("Update Error:", error);
-        alert("❌ Failed to update interview");
+        alert(" Failed to update interview");
       }
       return;
     } else {
       alert("Creating new schedule");
 
-      
+
       try {
-        // 1️⃣ Create Schedule
+        //  Create Schedule
         const scheduleRes = await createSchedule(scheduleData.interviewer, {
           date: scheduleData.date,
           time: scheduleData.time,
@@ -298,23 +272,23 @@ const InterviewScheduling = () => {
         const scheduleId = scheduleRes?.data?.scheduleId;
 
         if (!scheduleId) {
-          alert("❌ Schedule ID not received from backend!");
+          alert(" Schedule ID not received from backend!");
           console.error("Response did not contain scheduleId:", scheduleRes);
           return;
         }
 
 
         console.log("created Schedule ID:", scheduleData);
-        const emailIds = [...scheduleData.trainees,scheduleData.interviewerId];
+        const emailIds = [...scheduleData.trainees, scheduleData.interviewerId];
         console.log("Trainee Emails for Notification:", emailIds);
-        // 3️⃣ Assign Trainees
-        await assignTrainees(scheduleId,emailIds);
+        // assign Trainees
+        await assignTrainees(scheduleId, emailIds);
 
-        alert("✅ Interview Scheduled Successfully!");
+        alert(" Interview Scheduled Successfully!");
 
       } catch (error) {
         console.error("Schedule Error:", error);
-        alert("❌ Failed to schedule interview");
+        alert(" Failed to schedule interview");
       }
     }
   };
@@ -345,7 +319,7 @@ const InterviewScheduling = () => {
     try {
       const delInterviewData = await deleteInterviewSchedule(interviewId);
       console.log("Cancelled Interview ID:", interviewId);
-      // alert("Interview cancelled successfully");
+
       loadAllSchedules();
     } catch (error) {
       console.error("Cancellation Error:", error);
@@ -377,23 +351,15 @@ const InterviewScheduling = () => {
     setSelectedDate(interviewDate);
     setSelectedTime(interviewTime);
 
-    // Set selected trainees for the reschedule
-    // const traineeId = interview?.user?.trngid;
+
     const traineeIds = interview
       .map(item => item?.user?.trngid)
       .filter(Boolean);
     setSelectedTrainees(traineeIds);
-    // setSelectedTrainees(traineeId ? [traineeId] : []);
-    // console.log("INTERVIEW TRAINEE ID:", schedules);
+
     console.log(interview)
-    console.log("fddddddd",interview[0]?.interviewSchedule)
+    console.log("fddddddd", interview[0]?.interviewSchedule)
     setFormdata(interview[0]?.interviewSchedule);
-    
-
-    // Keep schedules intact; no need to overwrite all schedules
-    // setSchedules(interview?.interviewSchedule); <-- REMOVE
-
-    // Switch back to calendar view for scheduling
     setActiveView('calendar');
 
     console.log("Rescheduling interview:", {
@@ -421,20 +387,7 @@ const InterviewScheduling = () => {
         break;
     }
 
-    // if(newStatus === 'cancel'){
-    //   const confirmCancel = window.confirm("Are you sure you want to cancel this interview? "+interviewId);
 
-    //   if (!confirmCancel) {
-    //     return; 
-    //   }
-    //   if(confirmCancel){
-    //     const delInterview = schedules?.filter(sch => sch?.id !== interviewId);
-    //     const delInterviewData = await updateInterviewSchedule(interviewId);
-
-    //     console.log("Cancelled Interview ID:", interviewId);
-    //     // alert("Interview cancelled successfully.");
-    //   }
-    // }
     console.log('Updating interview status:', interviewId, newStatus);
   };
 
@@ -444,21 +397,6 @@ const InterviewScheduling = () => {
     // This would navigate to interview details page or open modal
   };
 
-  // Handle interview reschedule
-  // const handleRescheduleInterview = (interview) => {
-
-  //   console.log('Rescheduling interview:', interview);
-  //   // This would populate the scheduling form with existing interview data
-  //   setSelectedDate(new Date(interview?.interviewSchedule?.date));
-
-  // const formattedTime = interview?.interviewSchedule?.time?.slice(0, 5);
-
-  //   setSelectedTime(interview?.interviewSchedule?.time?.slice(0, 5).toString());
-  //   console.log("INTERVIEW TRAINEE ID:",interview?.interviewSchedule?.time.slice(0, 5));
-  //   setSelectedTrainees([interview?.user?.trngid]);
-  //   setSchedules(interview?.interviewSchedule);
-  //   setActiveView('calendar');
-  // };
 
 
 
@@ -491,7 +429,7 @@ const InterviewScheduling = () => {
   const viewTabs = [
     { id: 'calendar', label: 'Calendar View', icon: 'Calendar' },
     { id: 'tracker', label: 'Status Tracker', icon: 'List' },
-    // { id: 'conflicts', label: 'Conflicts', icon: 'AlertTriangle', badge: conflicts?.length }
+
   ];
 
 
@@ -500,40 +438,37 @@ const InterviewScheduling = () => {
   const loadAllTrainers = async () => {
     try {
       const result = await fetchAllTrainees();
-      console.log("TRAINERS API RESULT:", result); // ✅ Add this
+      console.log("TRAINERS API RESULT:", result); // 
       setTrainers(result.data);
     } catch (error) {
       console.error("Failed to load trainers:", error);
     }
   };
 
+
   const loadAllTrainees = async () => {
     try {
       const managerId = sessionStorage.getItem("userId");
-      const result = await fetchTraineesByManagerId(managerId);
-      console.log("API RESULT:", result);
+      const result = await fetchTraineeSummaryByManager(managerId); // Use your API
+      console.log("Trainee API Result:", result);
 
-      // const formatted = (result.data || []).map(t => ({
-      //   id: t.traineeId,
-      //   name: t.name || "Unknown",
-      //   email: t.email || "N/A",
-      //   progressPercentage: t.completionPercentage || 0,
-      //   lastInterviewDate: t.lastAssessmentDate || null,
-      //   // interviewStatus: t.interviewStatus || "due",
-      //   // priority: t.priority || "medium"
-      // }));
-      
-      const formatted = (result.data || []).map(t => ({
-        id: t.trngid,
-        name: `${t.firstname} ${t.lastname}`,
-        email: t.emailid,
-        phone: t.phonenumber,
-        designation: t.designation,
-        manager: t.managerData?.username || "No Manager"
+      if (!result?.data) {
+        setTrainees([]);
+        return;
+      }
+
+      // Map API response to format suitable for TraineeSelectionPanel
+      const formatted = result.data.map(t => ({
+        id: t.traineeId,
+        name: t.name,
+        email: t.email,
+        progressPercentage: t.completionPercentage || 0,
+        lastInterviewDate: t.lastAssessmentDate !== "N/A" ? t.lastAssessmentDate : null,
+        interviewStatus: t.interviewStatus === null ? "due" : (t.interviewStatus ? "completed" : "due"),
+        lastAssessmentScore: t.lastAssessmentScore || 0
       }));
 
-
-      console.log("hsjjjjjjjjjd", formatted);
+      console.log("Formatted Trainees:", formatted);
       setTrainees(formatted);
 
     } catch (error) {
@@ -603,22 +538,7 @@ const InterviewScheduling = () => {
             </div>
 
             <div className="flex items-center space-x-3">
-              {/* <Button
-                variant="outline"
-                iconName="Download"
-                iconPosition="left"
-                onClick={() => console.log('Export schedule')}
-              >
-                Export Schedule
-              </Button> */}
-              {/* <Button
-                variant="default"
-                iconName="Plus"
-                iconPosition="left"
-                onClick={() => setActiveView('calendar')}
-              >
-                New Interview
-              </Button> */}
+
             </div>
           </div>
 

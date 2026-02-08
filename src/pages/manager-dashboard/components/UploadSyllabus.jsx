@@ -7,7 +7,7 @@ import Input from "../../../components/ui/Input";
 import Icon from "../../../components/AppIcon";
 import Select from "../../../components/ui/Select";
 import '../../../App.css'
-import { uploadSyllabusAPI, getAllSyllabusAPI, updateSyllabusAPI, getAllTrainers } from "../../../api_service";
+import { uploadSyllabusAPI, getAllSyllabusAPI, updateSyllabusAPI, getAllTrainers, deleteSubTopicAPI, deleteSyllabusAPI } from "../../../api_service";
 
 const UploadSyllabus = ({ onCancel }) => {
     const [formData, setFormData] = useState({
@@ -22,6 +22,8 @@ const UploadSyllabus = ({ onCancel }) => {
     const [syllabusList, setSyllabusList] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [trainerList, setTrainerList] = useState([]);
+    const [refreshKey, setRefreshKey] = useState(0);
+
 
 
 
@@ -46,13 +48,22 @@ const UploadSyllabus = ({ onCancel }) => {
             console.error("Failed to fetch trainers", err);
         }
     };
+
     useEffect(() => {
         loadAll();
+    }, [refreshKey]);
+
+    useEffect(() => {
         loadTrainers();
     }, []);
+
     useEffect(() => {
         console.log("Updated Trainer List:", trainerList);
     }, [trainerList]);
+
+    const triggerReload = () => {
+        setRefreshKey(prev => prev + 1);
+    };
 
     const handleChange = (field, value) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -72,28 +83,52 @@ const UploadSyllabus = ({ onCancel }) => {
         }));
     };
 
-    const deleteSubTopic = (index) => {
-        
-    if (!window.confirm("This will permanently delete this subtopic. Continue?")) return;
-        const updated = [...formData.subTopics];
-        updated.splice(index, 1);
-        setFormData((prev) => ({ ...prev, subTopics: updated }));
+
+
+    const handleDeleteSyllabus = async (syllabusId) => {
+        if (!window.confirm("This will permanently delete this syllabus and all its subtopics. Continue?")) return;
+
+        try {
+            await deleteSyllabusAPI(syllabusId);
+            alert("Syllabus deleted successfully!");
+            triggerReload();
+
+        } catch (err) {
+            console.error(err);
+            alert("Failed to delete syllabus");
+
+        }
     };
 
-    // const interviewerOptions = Array.isArray(trainerList)
-    //     ? (trainerList).map((t) => ({
-    //         value: t.trainerId,
-    //         label: `${t.name}${t.title ? " - " + t.title : ""}`,
-    //     }))
-    //     : [];
+
+
+    const deleteSubTopic = async (index, subTopicId) => {
+        if (!window.confirm("This will permanently delete this subtopic. Continue?")) return;
+
+        try {
+            if (subTopicId) {
+                await deleteSubTopicAPI(subTopicId);
+                alert("Subtopic deleted successfully from server!");
+                triggerReload();
+            }
+            const updated = [...formData.subTopics];
+            updated.splice(index, 1);
+            setFormData(prev => ({ ...prev, subTopics: updated }));
+        } catch (err) {
+            console.error(err);
+            alert("Failed to delete subtopic");
+        }
+    }
+
+
 
     console.log(trainerList)
-         const interviewerOptions = Array.isArray(trainerList)
-    ? (trainerList).map((t) => ({
-      value: t.trngid,
-      label: `${t.firstname} ${t.lastname}${t.role.roleName ? " - " + t.role.roleName : ""}`,
-    }))
-    : [];
+    const interviewerOptions = Array.isArray(trainerList)
+        ? (trainerList).map((t) => ({
+            value: t.trngid,
+            label: `${t.firstname} ${t.lastname}${t.role.roleName ? " - " + t.role.roleName : ""}`,
+        }))
+        : [];
 
     const validateForm = () => {
         const newErrors = {};
@@ -114,60 +149,7 @@ const UploadSyllabus = ({ onCancel }) => {
         navigate('/');
     };
 
-    // const handleSubmit = async () => {
-    //     if (!validateForm()) return;
-    //     setLoading(true);
 
-    //     try {
-    //         const fd = new FormData();
-    //         fd.append("title", formData.title);
-    //         fd.append("topic", formData.topic);
-
-
-    //         formData.subTopics.forEach((sub, i) => {
-    //             console.log("Appending subtopic:", sub);
-    //             fd.append(`subTopics[${i}].name`, sub.name);
-    //             fd.append(`subTopics[${i}].description`, sub.description);
-
-    //             if (sub.file instanceof File) {
-    //                 fd.append(`subTopics[${i}].file`, sub.file, sub.file.name);
-    //             } else if (typeof sub.file === "string") {
-    //                 // send existing file path so backend knows to keep it
-    //                 fd.append(`subTopics[${i}].filePath`, sub.file);
-    //             }
-    //         });
-
-
-    //         // console.log(fd);
-    //         // console.log(formData);
-    //         let res;
-    //         if (editingId) {
-    //             res = await updateSyllabusAPI(editingId, fd);
-    //             setSyllabusList(prev => prev.map(it => it.id === editingId ? res.data : it));
-    //             alert("Updated Successfully!");
-    //         } else {
-    //             console.log(formData);
-    //             res = await uploadSyllabusAPI(formData);
-    //             setSyllabusList(prev => [...prev, res.data]);
-    //             alert("Uploaded Successfully!");
-
-    //         }
-
-    //         // reset form
-    //         setEditingId(null);
-    //         // setFormData({
-    //         //     title: "",
-
-    //         //     topic: "",
-    //         //     subTopics: [{ name: "", description: "", file: null }],
-    //         // });
-    //     } catch (err) {
-    //         console.error("Upload error", err);
-    //         alert(err?.response?.data || err.message || "Upload failed");
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
 
 
     const handleSubmit = async () => {
@@ -180,13 +162,13 @@ const UploadSyllabus = ({ onCancel }) => {
                 title: formData.title,
                 topic: formData.topic,
                 durationInDays: Number(formData.durationInDays),
-                //subTopics: formData.subTopics.map(st => ({ name: st.name, description: st.description }))
+
                 subTopics: formData.subTopics.map(st => ({
                     id: st.id,
                     name: st.name,
                     description: st.description,
                     filePath: typeof st.file === "string" ? st.file : null,
-                    // manager_id: st.userid ? { userid: st.userid } : null
+
                     manager: st.managerId ? { trngid: st.managerId } : null
                 }))
 
@@ -194,22 +176,10 @@ const UploadSyllabus = ({ onCancel }) => {
 
             console.log("Prepared Syllabus JSON:", syllabusJson);
 
-            // const fd = new FormData();
-            // fd.append("syllabus", new Blob([JSON.stringify(syllabusJson)], { type: "application/json" }));
 
-            // formData.subTopics.forEach(st => {
-            //     if (st.file instanceof File) {
-            //         fd.append("files", st.file, st.file.name);
-            //     }
-            // });
             const fd = new FormData();
             fd.append("syllabus", JSON.stringify(syllabusJson));
 
-            // formData.subTopics.forEach((sub, i) => {
-            //     if (sub.file && sub.file instanceof File) {
-            //         fd.append("files", sub.file);
-            //     }
-            // });
 
             formData.subTopics.forEach((sub) => {
                 if (sub.file instanceof File) {
@@ -228,10 +198,16 @@ const UploadSyllabus = ({ onCancel }) => {
             if (editingId) {
                 setSyllabusList(prev => prev.map(it => it.id === editingId ? res.data : it));
                 alert("Updated Successfully!");
+
             } else {
                 setSyllabusList(prev => [...prev, res.data]);
                 alert("Uploaded Successfully!");
+
             }
+
+            triggerReload();
+
+
 
             setEditingId(null);
 
@@ -244,8 +220,12 @@ const UploadSyllabus = ({ onCancel }) => {
     };
 
     console.log("Trainer List:", trainerList);
+
+
+
+    // 1. UPDATED EDIT LOGIC
     const editSyllabus = (item) => {
-        setEditingId(item.id);
+        setEditingId(item.id); // Matches "id" in your JSON
 
         setFormData({
             title: item.title,
@@ -257,18 +237,65 @@ const UploadSyllabus = ({ onCancel }) => {
                     name: sub.name,
                     description: sub.description,
                     file: sub.filePath || null,
-                    // trainerId: sub.trainer?.trainerId || "",
-                    manager: sub.managerId? { trngid: sub.managerId } : null
-
-                    // store the existing file path
-
-                    // store the existing file path
+                    // Fix: Accessing manager.trngid based on your JSON response
+                    managerId: sub.manager ? sub.manager.trngid : ""
                 }))
                 : [{ name: "", description: "", file: null, managerId: "" }]
         });
     };
 
+    // ... inside your return statement ...
 
+    {/* RIGHT LIST - Updated with visible Date */ }
+    <div className="bg-white/70 p-6 shadow-xl rounded-2xl border border-blue-200 h-fit sticky top-24">
+        <h2 className="text-2xl font-bold text-blue-700 mb-4 flex items-center gap-2">
+            <Icon name="List" size={24} className="text-blue-700" />
+            Syllabus List
+        </h2>
+
+        {syllabusList.length === 0 ? (
+            <p className="text-gray-500">No syllabus uploaded yet.</p>
+        ) : (
+            <ul className="space-y-3">
+                {syllabusList.map((item) => (
+                    <li
+                        key={item.id}
+                        className="p-4 bg-blue-50 rounded-lg border border-blue-100 cursor-pointer hover:bg-blue-100 relative group transition-all"
+                        onClick={() => editSyllabus(item)}
+                    >
+                        <div className="pr-10">
+                            <h4 className="font-semibold text-blue-900">{item.title}</h4>
+                            <p className="text-sm text-gray-600">{item.topic}</p>
+
+                            {/* VISIBLE DATE */}
+                            <div className="flex items-center gap-1 mt-2 text-[11px] text-gray-400 font-medium">
+                                <Icon name="Calendar" size={12} />
+                                <span>
+                                    {item.createdAt
+                                        ? new Date(item.createdAt).toLocaleDateString('en-GB', {
+                                            day: '2-digit',
+                                            month: 'short',
+                                            year: 'numeric'
+                                        })
+                                        : "N/A"}
+                                </span>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteSyllabus(item.id);
+                            }}
+                            className="absolute top-4 right-4 text-red-400 hover:text-red-600 transition-colors"
+                        >
+                            <Icon name="Trash2" size={18} />
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        )}
+    </div>
     return (
         <div className="min-h-screen bg-blue-50">
             <Header
@@ -281,11 +308,10 @@ const UploadSyllabus = ({ onCancel }) => {
                 <NavigationBreadcrumb userRole="manager" />
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-10">
-                    {/* LEFT FORM */}
-                    {/* <div className="bg-white/50 backdrop-blur-lg shadow-xl rounded-2xl border border-blue-200 h-fit sticky top-24"> */}
+
                     <div className="bg-white/50 backdrop-blur-lg shadow-xl rounded-2xl border border-blue-200 sticky top-24 max-h-[calc(100vh-120px)] flex flex-col">
 
-                        {/* <div className="p-8 border-b bg-blue-100 rounded-t-2xl"> */}
+
                         <div className="p-8 border-b bg-blue-100 rounded-t-2xl flex-none">
 
                             <h2 className="text-3xl font-bold text-black">
@@ -294,7 +320,7 @@ const UploadSyllabus = ({ onCancel }) => {
                             </h2>
                         </div>
 
-                        {/* <div className="p-8 space-y-8"> */}
+
                         <div className="custom-scrollbar p-8 space-y-8 flex-1 flex flex-col overflow-y-auto">
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
@@ -319,26 +345,11 @@ const UploadSyllabus = ({ onCancel }) => {
                                     value={formData.durationInDays}
                                     onChange={(e) => handleChange("durationInDays", e.target.value)}
                                 />
-                                {/* <Input
-                                    label="Duration"
-                                    placeholder="Enter number of days"
-                                    value={
-                                        formData.durationInDays
-                                            ? `${formData.durationInDays} ${formData.durationInDays > 1 ? "Days" : "Day"}`
-                                            : ""
-                                    }
-                                    onChange={(e) => {
-                                        // Only number store karo
-                                        const val = e.target.value.replace(/\D/g, "");
-                                        handleChange("durationInDays", val);
-                                    }}
-                                />
- */}
+
 
                             </div>
 
-                            {/* SUBTOPICS */}
-                            {/* <div className="space-y-6 h-[500px] overflow-y-scroll pr-3 custom-scroll"> */}
+
                             <div className="space-y-6 flex-1 overflow-y-auto pr-3 custom-scrollbar min-h-[200px]">
 
 
@@ -349,12 +360,14 @@ const UploadSyllabus = ({ onCancel }) => {
                                 {formData.subTopics.map((sub, index) => (
                                     <div key={index} className="border p-5 rounded-xl bg-white shadow relative">
 
+
                                         <button
-                                            onClick={() => deleteSubTopic(index)}
+                                            onClick={() => deleteSubTopic(index, sub.id)}
                                             className="absolute top-3 right-3 text-red-500 hover:text-red-700"
                                         >
                                             <Icon name="Trash2" size={22} />
                                         </button>
+
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
                                             <Input
@@ -453,7 +466,7 @@ const UploadSyllabus = ({ onCancel }) => {
                                 </Button>
                             </div>
 
-                            {/* <div className="pt-6 border-t flex flex-col sm:flex-row gap-4"> */}
+
                             <div className="pt-6 border-t flex flex-col sm:flex-row gap-4 flex-none">
 
                                 <button
@@ -476,7 +489,7 @@ const UploadSyllabus = ({ onCancel }) => {
                         </div>
                     </div>
 
-                    {/* RIGHT LIST */}
+
                     <div className="bg-white/70 p-6 shadow-xl rounded-2xl border border-blue-200 h-fit sticky top-24">
                         <h2 className="text-2xl font-bold text-blue-700 mb-4 flex items-center gap-2">
                             <Icon name="List" size={24} className="text-blue-700" />
@@ -490,17 +503,25 @@ const UploadSyllabus = ({ onCancel }) => {
                                 {syllabusList.map((item) => (
                                     <li
                                         key={item.id}
-                                        className="p-4 bg-blue-50 rounded-lg border cursor-pointer hover:bg-blue-100"
+                                        className="p-4 bg-blue-50 rounded-lg border border-blue-100 cursor-pointer hover:bg-blue-100 relative group transition-all"
                                         onClick={() => editSyllabus(item)}
                                     >
-                                        <h4 className="font-semibold text-blue-900">{item.title}</h4>
-                                        <p className="text-sm text-gray-600">{item.topic}</p>
-                                        {/* <p className="text-sm text-gray-500 mt-1">
-                                            {item.subTopics.length} 
-                                            {item.subTopics.map((i)=>(
-                                                    i.filePath
-                                            ))} Subtopics
-                                        </p> */}
+                                        <div className="pr-10">
+                                            <h4 className="font-semibold text-blue-900">{item.title}</h4>
+                                            <p className="text-sm text-gray-600">{item.topic}</p>
+
+
+                                        </div>
+
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteSyllabus(item.id);
+                                            }}
+                                            className="absolute top-4 right-4 text-red-400 hover:text-red-600 transition-colors"
+                                        >
+                                            <Icon name="Trash2" size={18} />
+                                        </button>
                                     </li>
                                 ))}
                             </ul>

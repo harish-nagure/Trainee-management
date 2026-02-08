@@ -24,21 +24,7 @@ const TraineeDataTable = ({
     setSortConfig({ key, direction });
     onSort(key, direction);
   };
-  // const sortedTrainees = React.useMemo(() => {
-  //   if (!sortConfig.key) return trainees;
-  //   return [...trainees].sort((a, b) => {
-  //     let valA = a[sortConfig.key];
-  //     let valB = b[sortConfig.key];
 
-  //     // Agar string hai to lowercase karke compare karo
-  //     if (typeof valA === 'string') valA = valA.toLowerCase();
-  //     if (typeof valB === 'string') valB = valB.toLowerCase();
-
-  //     if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
-  //     if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
-  //     return 0;
-  //   });
-  // }, [trainees, sortConfig]);
 
   const sortedTrainees = React.useMemo(() => {
     if (!sortConfig.key) return trainees;
@@ -71,10 +57,9 @@ const TraineeDataTable = ({
       'completed': { bg: 'bg-green-100', text: 'text-green-700', label: 'Completed' }
     };
 
-    // const config = statusConfig?.[status] || statusConfig?.['not-started'];
 
     let config;
-    // console.log("percentage in badge", percentage);
+
     if (percentage >= 85) {
       config = statusConfig['completed'];
     } else if (percentage > 0 && percentage < 85) {
@@ -192,14 +177,15 @@ const TraineeDataTable = ({
                 </td>
                 <td className="px-6 py-4">
                   <div>
-                      
 
-                    {/* <p className="text-sm font-medium text-foreground">{trainee?.currentStep}</p> */}
-                   
+
                     <p className="text-sm font-medium text-foreground">
-                    {trainee?.subtopics && trainee.subtopics.length > 0
-                        ? `Step: ${trainee.subtopics} `
-                        : "No Assessment Yet"}</p>
+                      {trainee?.subtopics && trainee.subtopics.length > 0
+                        ? `Step: ${trainee.subtopics[trainee.subtopics.length - 1]}`
+                        : "No Assessment Yet"}
+                    </p>
+
+
                     <p className="text-xs text-muted-foreground">{trainee?.stepDescription}</p>
                   </div>
                 </td>
@@ -228,14 +214,7 @@ const TraineeDataTable = ({
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-center space-x-2">
-                    {/* <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onViewProfile(trainee?.id)}
-                      iconName="Eye"
-                      iconSize={16}
-                      title="View Profile"
-                    /> */}
+
                     <Button
                       variant="ghost"
                       size="icon"
@@ -284,7 +263,13 @@ const TraineeDataTable = ({
             <div className="space-y-3">
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Current Step</p>
-                <p className="text-sm font-medium text-foreground">{trainee?.currentStep}</p>
+                <p className="text-sm font-medium text-foreground">
+                  {trainee?.subtopics && trainee.subtopics.length > 0
+                    ? `Step: ${trainee.subtopics[trainee.subtopics.length - 1]}`
+                    : "No Assessment Yet"}
+                </p>
+
+
               </div>
 
               <div>

@@ -20,17 +20,7 @@ const SchedulingForm = ({
     typeof Formdata?.subTopics === "string"
       ? Formdata.subTopics.split("|").map(Number)
       : [];
-  // const [formData, setFormData] = useState({
-  //   interviewer: "" || Formdata?.trainer.trainerId,
-  //   interviewType: "" || Formdata?.interviewType,
-  //   location: "" || Formdata?.location,
-  //   // meetingLink: "",
-  //   duration: "60" || Formdata?.duration,
-  //   notes: "" || Formdata?.notes,
-  //   // emailTemplate: "default",
-  //   subTopics: [] || parsedSubTopics,
-  //   //syllabusTitles: []
-  // });
+
   const [formData, setFormData] = useState({
     interviewer: Formdata?.managerId?.userid || "",
     interviewType: Formdata?.interviewType || "",
@@ -49,30 +39,7 @@ const SchedulingForm = ({
   const [selectedTitle, setSelectedTitle] = useState("ALL");
   const [selectedSubTopics, setSelectedSubTopics] = useState([]);
 
-  // const getCompletedSyllabusData = (data, traineeIds) => {
-  //   return data
-  //     .map(syllabus => {
-  //       const completedSubTopics = syllabus.subTopics?.filter(subTopic =>
-  //         subTopic.stepProgress?.some(
-  //           progress =>
-  //             progress.complete === true &&
-  //             progress.checker === true &&
-  //             traineeIds.includes(progress.user?.trngid)
-  //         )
-  //       );
 
-  //       if (!completedSubTopics?.length) return null;
-
-  //       return {
-  //         ...syllabus,
-  //         subTopics: completedSubTopics
-  //       };
-  //     })
-  //     .filter(Boolean);
-  // };
-
-
-  // const [completedSubTopics, setCompletedSubTopics] = useState([]);
   console.log("Formdata in Scheduling Form:", Formdata);
   const getCompletedSyllabusData = (data, traineeIds) => {
     return data
@@ -97,7 +64,7 @@ const SchedulingForm = ({
   };
 
   console.log("selected trainees in form", selectedTrainees);
-  // ✅ Fetch trainers dynamically (optional)
+  //  Fetch trainers dynamically (optional)
   useEffect(() => {
     const fetchTrainers = async () => {
       try {
@@ -134,13 +101,6 @@ const SchedulingForm = ({
     { value: "progress", label: "Progress Review Template" },
   ];
 
-  // ✅ Build interviewer dropdown options
-  // const interviewerOptions = Array.isArray(trainerList)
-  //   ? (trainerList).map((t) => ({
-  //     value: t.trainerId,
-  //     label: `${t.name}${t.title ? " - " + t.title : ""}`,
-  //   }))
-  //   : [];
 
   const interviewerOptions = Array.isArray(trainerList)
     ? (trainerList).map((t) => ({
@@ -171,54 +131,6 @@ const SchedulingForm = ({
   }, [selectedDate, selectedTime, selectedTrainees]);
 
 
-  // useEffect(() => {
-  //   if (!selectedTrainees || selectedTrainees.length === 0) {
-  //     setCompletedSubTopics([]);
-  //     return;
-  //   }
-
-  //   const loadData = async () => {
-  //     try {
-  //       const response = await fetchCompletedSubTopics();
-
-  //       const data = Array.isArray(response)
-  //         ? response
-  //         : Array.isArray(response?.data)
-  //           ? response.data
-  //           : [];
-
-  //       console.log("Completed SubTopics API response:", response);
-  //       const filteredSubTopics = data.flatMap(syllabus =>
-  //         syllabus.subTopics?.flatMap(subTopic =>
-  //           subTopic.stepProgress
-  //             ?.filter(progress =>
-  //               progress.checker === true &&
-  //               selectedTrainees.includes(progress.user?.empid)
-  //             )
-  //             ?.map(() => ({
-  //               value: subTopic.subTopicId,
-  //               label: `${subTopic.stepNumber}. ${subTopic.name}`
-  //             })) || []
-  //         ) || []
-  //       );
-
-  //       console.log(
-  //         "Filtered SubTopics for",
-  //         selectedTrainees,
-  //         filteredSubTopics
-  //       );
-
-  //       setCompletedSubTopics(filteredSubTopics);
-
-  //     } catch (err) {
-  //       console.error("Error fetching completed subtopics", err);
-  //       setCompletedSubTopics([]);
-  //     }
-  //   };
-
-  //   loadData();
-  // }, [selectedTrainees]);
-
 
   useEffect(() => {
     if (!selectedTrainees?.length) {
@@ -244,7 +156,7 @@ const SchedulingForm = ({
 
         setSyllabusData(completedSyllabus);
 
-        // 🔹 Flat subtopic dropdown list
+        //  Flat subtopic dropdown list
         const subTopicOptions = completedSyllabus.flatMap(syllabus =>
           syllabus.subTopics.map(sub => ({
             value: sub.subTopicId,
@@ -294,19 +206,7 @@ const SchedulingForm = ({
   })();
 
 
-  // const handleSyllabusChange = values => {
-  //   let selected = Array.isArray(values) ? values : [values];
 
-  //   if (selected.includes("ALL")) {
-  //     selected = syllabusOptions
-  //       .filter(o => o.value !== "ALL")
-  //       .map(o => o.value);
-  //   }
-
-  //   setSelectedSyllabus(selected);
-  //   setSelectedSubTopics([]);
-  //   handleInputChange("subTopicIds", []);
-  // };
 
   const handleSyllabusChange = values => {
     let selected = Array.isArray(values) ? values : [values];
@@ -318,10 +218,9 @@ const SchedulingForm = ({
     }
 
     setSelectedSyllabus(selected);
-    //handleInputChange("syllabusTitles", selected)
-    // setSelectedSubTopics([]);
+
     handleInputChange("subTopicIds", []);
-    // setSelectedSubTopics(selected);
+
 
   };
 
@@ -391,7 +290,7 @@ const SchedulingForm = ({
     setIsSubmitting(true);
     try {
       const scheduleData = {
-        scheduleId: Formdata?.scheduleId ,
+        scheduleId: Formdata?.scheduleId,
         date: selectedDate,
         time: selectedTime,
         trainees: selectedTrainees,
@@ -400,10 +299,6 @@ const SchedulingForm = ({
         syllabusTitles: formData.syllabusTitles,
         subTopicIds: formData.subTopics,
         interviewerId: trainerList.find(t => t.userid === formData.interviewer)?.trngid,
-        // syllabusTitles: selectedSyllabus,
-//     syllabusTitles: formData.syllabusTitles,
-        
-        //     subTopicIds: formData.subTopicIds,
 
       };
       console.log("Scheduling data:", scheduleData);
@@ -512,7 +407,7 @@ const SchedulingForm = ({
         </div>
 
         {/* Location + Meeting Link */}
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Location"
@@ -524,22 +419,11 @@ const SchedulingForm = ({
             description="Physical meeting location "
           />
 
-          {/* <Input
-            label="Meeting Link"
-            type="url"
-            placeholder="https://meet.google.com/abc-defg-hij"
-            value={formData.meetingLink}
-            onChange={(e) => handleInputChange("meetingLink", e.target.value)}
-            error={errors.meetingLink}
-            description="Virtual meeting link"
-          /> */}
-
-
         </div>
 
         <div className="grid grid-cols-2 gap-4">
 
-          {/* 🔹 SYLLABUS MULTI SELECT */}
+          {/*  SYLLABUS MULTI SELECT */}
           <div className="space-y-2">
             <Select
               label="Syllabus"
@@ -551,7 +435,7 @@ const SchedulingForm = ({
               required
             />
 
-            {/* ✅ Selected syllabus chips */}
+            {/*  Selected syllabus chips */}
             {selectedSyllabus.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {selectedSyllabus.map(title => (
@@ -568,7 +452,7 @@ const SchedulingForm = ({
             )}
           </div>
 
-          {/* 🔹 SUBTOPIC MULTI SELECT */}
+          {/*  SUBTOPIC MULTI SELECT */}
           <div className="space-y-3">
             <Select
               label="Completed Sub Topics"
@@ -624,14 +508,6 @@ const SchedulingForm = ({
           />
         </div>
 
-        {/* Email Template */}
-        {/* <Select
-          label="Email Template"
-          description="Template for interview notification emails"
-          options={emailTemplateOptions}
-          value={formData.emailTemplate}
-          onChange={(value) => handleInputChange("emailTemplate", value)}
-        /> */}
 
         {/* Actions */}
         <div className="flex items-center justify-end space-x-3 pt-4 border-t border-border">
