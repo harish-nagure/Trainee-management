@@ -1040,3 +1040,118 @@ export const fetchTraineeDelays = (traineeId) =>
 
 export const fetchManagerDelays = (managerId) =>
   axios.get(`${API_URL}/dashboard/manager-delays/${managerId}`);
+
+
+/* ---------------- CREATE ---------------- */
+export const createAssessmentforTest = async (data) => {
+  try {
+    const response = await axios.post(`${API_URL}/assessment/test/create`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating assessment:", error);
+    throw error;
+  }
+};
+
+/* ---------------- GET ALL ---------------- */
+export const getAllAssessmentsforTest = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/assessment/test/all`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching assessments:", error);
+    throw error;
+  }
+};
+
+/* ---------------- GET BY ID ---------------- */
+export const getAssessmentById = async (id) => {
+  try {
+    const response = await axios.get(`${API_URL}/assessment/test/assessment/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching assessment by id:", error);
+    throw error;
+  }
+};
+
+/* ---------------- UPDATE ---------------- */
+export const updateAssessmentforTest = async (id, data) => {
+  try {
+    const response = await axios.put(`${API_URL}/assessment/test/update/${id}`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating assessment:", error);
+    throw error;
+  }
+};
+
+/* ---------------- DELETE ---------------- */
+export const deleteAssessmentApiforTest = async (id) => {
+  try {
+    const response = await axios.delete(`${API_URL}/assessment/test/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting assessment:", error);
+    throw error;
+  }
+};
+
+/* ---------------- GET BY DEPARTMENT (single) ---------------- */
+export const getTraineeAssessmentsforTest = async (departmentId) => {
+  try {
+    const response = await axios.get(
+      `${API_URL}/assessment/test/assessments/${departmentId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching by department:", error);
+    throw error;
+  }
+};
+
+/* ---------------- GET BY MULTIPLE DEPARTMENTS ---------------- */
+export const getAssessmentsByDepartments = async (departmentIds) => {
+  try {
+    const response = await axios.get(
+      `${API_URL}/assessment/test/assessments`,
+      {
+        params: { departmentIds } // array send hoga
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching by departments:", error);
+    throw error;
+  }
+};
+
+/* ---------------- DEPARTMENTS (AGAR API HAI) ---------------- */
+export const checkAssessmentSubmitted = async (assessmentId, traineeId) => {
+  try {
+    const response = await axios.get(`${API_URL}/assessment/is-submitted`, {
+      params: {
+        assessmentId,
+        traineeId
+      }
+    });
+
+    return response.data; // true / false return karega
+  } catch (error) {
+    console.error("Error checking submitted status:", error);
+    throw error;
+  }
+};
+
+export const submitAssessment = async (assessmentId, payload) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/assessment/submit/${assessmentId}`,
+      payload
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error submitting assessment:", error);
+    throw error;
+  }
+};

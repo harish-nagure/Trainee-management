@@ -296,6 +296,12 @@ const Header = ({ userName = "User", onLogout }) => {
       icon: "BookOpen",
       roles: ["trainee"],
     },
+     {
+      label: "Assessment",
+      path: "/trainee-assessment-list",
+      icon: "BookOpen",
+      roles: ["trainee"],
+    },
     {
       label: "Assessment",
       path: "/assessment-entry",
@@ -332,6 +338,13 @@ const Header = ({ userName = "User", onLogout }) => {
       icon: "UserPlus",
       roles: ["manager"],
     },
+    {
+      label: "Assessment Test",
+      path: "/create-question",
+      icon: "UserPlus",
+      roles: ["manager"],
+    },
+
   ];
 
   const visibleNavItems = navigationItems.filter((item) =>

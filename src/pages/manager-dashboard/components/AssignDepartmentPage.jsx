@@ -37,7 +37,7 @@ export default function AssignDepartmentPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isDeptDropdownOpen, setIsDeptDropdownOpen] = useState(false);
   const privilegedRoles = ["CEO", "CTO", "HR", "PM"];
-
+const [errors, setErrors] = useState({});
 
   const restrictedRoles = ["CEO", "CTO", "HR", "PM"];
   const roleName = sessionStorage.getItem("roleName");
@@ -248,8 +248,60 @@ export default function AssignDepartmentPage() {
     });
   };
 
+const validateForm = () => {
+  let newErrors = {};
+
+  if (!newTrainee.trngid.trim()) {
+    newErrors.trngid = "Trainee ID is required";
+  }
+
+  if (!newTrainee.firstname.trim()) {
+    newErrors.firstname = "First name is required";
+  }
+
+  if (!newTrainee.lastname.trim()) {
+    newErrors.lastname = "Last name is required";
+  }
+
+  if (!newTrainee.username.trim()) {
+    newErrors.username = "Username is required";
+  }
+
+  if (!newTrainee.emailid.trim()) {
+    newErrors.emailid = "Email is required";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newTrainee.emailid)) {
+    newErrors.emailid = "Invalid email format";
+  }
+
+  if (!newTrainee.phonenumber.trim()) {
+    newErrors.phonenumber = "Phone number is required";
+  } else if (!/^\d{10}$/.test(newTrainee.phonenumber)) {
+    newErrors.phonenumber = "Phone must be 10 digits";
+  }
+
+ if (!newTrainee.designation.trim()) {
+    newErrors.designation = "Designation is required";
+  } else if (newTrainee.designation.length < 2) {
+    newErrors.designation = "Designation must be at least 2 characters";
+  }
+
+  if (!isEditMode && !newTrainee.password) {
+    newErrors.password = "Password is required";
+  } else if (newTrainee.password && newTrainee.password.length < 6) {
+    newErrors.password = "Password must be at least 6 characters";
+  }
+
+  if (!newTrainee.roleId) {
+    newErrors.roleId = "Role is required";
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
 
   const handleSaveTrainee = async () => {
+if (!validateForm()) return;
+
     try {
 
       // const payload = {
@@ -540,6 +592,9 @@ export default function AssignDepartmentPage() {
                 onChange={handleNewTraineeChange}
                 className="border p-2 rounded"
               />
+           {errors.trngid && (
+  <p className="text-red-500 text-sm">{errors.trngid}</p>
+)}
               <input
                 name="firstname"
                 placeholder="First Name"
@@ -547,6 +602,9 @@ export default function AssignDepartmentPage() {
                 onChange={handleNewTraineeChange}
                 className="border p-2 rounded"
               />
+              {errors.firstname && (
+  <p className="text-red-500 text-sm">{errors.firstname}</p>
+)}
               <input
                 name="lastname"
                 placeholder="Last Name"
@@ -554,6 +612,9 @@ export default function AssignDepartmentPage() {
                 onChange={handleNewTraineeChange}
                 className="border p-2 rounded"
               />
+              {errors.lastname && (
+  <p className="text-red-500 text-sm">{errors.lastname}</p>
+)}
               <input
                 name="username"
                 placeholder="Username"
@@ -561,6 +622,9 @@ export default function AssignDepartmentPage() {
                 onChange={handleNewTraineeChange}
                 className="border p-2 rounded"
               />
+              {errors.username && (
+  <p className="text-red-500 text-sm">{errors.username}</p>
+)}
               <input
                 name="emailid"
                 placeholder="Email"
@@ -568,6 +632,9 @@ export default function AssignDepartmentPage() {
                 onChange={handleNewTraineeChange}
                 className="border p-2 rounded"
               />
+               {errors.emailid && (
+  <p className="text-red-500 text-sm">{errors.emailid}</p>
+)}
               <input
                 name="phonenumber"
                 placeholder="Phone Number"
@@ -575,6 +642,9 @@ export default function AssignDepartmentPage() {
                 onChange={handleNewTraineeChange}
                 className="border p-2 rounded"
               />
+               {errors.phonenumber && (
+  <p className="text-red-500 text-sm">{errors.phonenumber}</p>
+)}
               <input
                 name="managerId"
                 placeholder="Manager ID"
@@ -590,7 +660,9 @@ export default function AssignDepartmentPage() {
                 onChange={handleNewTraineeChange}
                 className="border p-2 rounded"
               />
-
+ {errors.password && (
+  <p className="text-red-500 text-sm">{errors.password}</p>
+)}
 
               <input
                 name="designation"
@@ -599,6 +671,9 @@ export default function AssignDepartmentPage() {
                 onChange={handleNewTraineeChange}
                 className="border p-2 rounded"
               />
+               {errors.designation && (
+  <p className="text-red-500 text-sm">{errors.designation}</p>
+)}
 
               <select
                 name="roleId"

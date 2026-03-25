@@ -16,6 +16,9 @@ import TraineeStepsPage from "./pages/manager-dashboard/components/TraineeStepsP
 import DepartmentPage from "./pages/manager-dashboard/components/DepartmentPage";
 import AssignDepartmentPage from "./pages/manager-dashboard/components/AssignDepartmentPage";
 import TraineeSyllabusPage from "./pages/manager-dashboard/components/TraineeSyllabusPage";
+import CreateQuestion from "./pages/manager-dashboard/CreateQuestion";
+import TraineeTestPage from "./pages/manager-dashboard/components/TraineeTestPage";
+import TraineeAssessmentList from "./pages/manager-dashboard/components/TraineeAssessmentList";
 
 
 const ProtectedRoute = ({ allowedRoles, children }) => {
@@ -101,9 +104,9 @@ const Routes = () => {
         <Route
           path="/assign-trainee"
           element={
-            //<ProtectedRoute allowedRoles={["MANAGER"]}>
+            <ProtectedRoute allowedRoles={["MANAGER"]}>
               <AssignDepartmentPage/>
-            //</ProtectedRoute>
+            </ProtectedRoute>
           }
         />
         <Route
@@ -123,6 +126,14 @@ const Routes = () => {
           </ProtectedRoute>
         }
         />
+         <Route
+          path="/create-question"
+          element={
+            <ProtectedRoute allowedRoles={["MANAGER"]}>
+              <CreateQuestion />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Trainee Only */}
         <Route
@@ -140,6 +151,25 @@ const Routes = () => {
               <SyllabusContentViewer />
             </ProtectedRoute>
           }
+        />
+        
+         <Route
+          path="/trainee-assessment-list"
+          element={
+             <ProtectedRoute allowedRoles={["TRAINEE"]}>
+          <TraineeAssessmentList />
+          </ProtectedRoute>
+        }
+        />
+
+       
+        <Route
+          path="/trainee-test/:assessmentId"
+          element={
+            <ProtectedRoute allowedRoles={["TRAINEE"]}>
+          <TraineeTestPage />
+          </ProtectedRoute>
+        }
         />
 
         {/* System Routes */}

@@ -251,6 +251,18 @@ useEffect(() => {
           return dateA - dateB;
         });
         setSyllabusProgress(sortedData);
+        // ✅ Extract only departmentIds
+const departmentIds = sortedData.flatMap(item =>
+  (item.departments || []).map(dep => dep.departmentId)
+);
+
+// ✅ Make distinct
+const uniqueDepartmentIds = [...new Set(departmentIds)];
+
+// ✅ Store in sessionStorage
+sessionStorage.setItem("departmentIds", JSON.stringify(uniqueDepartmentIds));
+
+console.log("Stored Department IDs:", uniqueDepartmentIds);
 
         const formattedSteps = sortedData.map((item, index, arr) => {
           //  current step completed
