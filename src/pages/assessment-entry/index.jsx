@@ -80,7 +80,7 @@ const roleName = sessionStorage.getItem("roleName")?.toLowerCase();
 
       let res;
 
-      // 🔥 Role based API call
+      //  Role based API call
      if (privilegedRoles.includes(roleName)) {
 
         res = await fetchAllTraineeSummaryAdmin();

@@ -888,6 +888,16 @@ const UploadSyllabus = ({ onCancel }) => {
         if (!formData.title.trim()) newErrors.title = "Title is required";
         if (!formData.topic.trim()) newErrors.topic = "Topic is required";
 
+        if(!formData.durationInDays){
+            newErrors.durationInDays="Duration is required";
+        }
+        else if(!/^\d+$/.test(formData.durationInDays)){
+            newErrors.durationInDays="Only Number requried";
+        }
+        else if(Number(formData.durationInDays)<=0){
+            newErrors.durationInDays="Must be greater than 0";
+        }
+
         formData.subTopics.forEach((sub, i) => {
             if (!sub.name.trim()) newErrors[`subname${i}`] = "Subtopic name required";
             if (!sub.description.trim()) newErrors[`subdesc${i}`] = "Description required";
@@ -1175,8 +1185,16 @@ const syllabusJson = {
                                     disabled={isRestricted}
                                     placeholder="Enter number of days e.g. 1, 2, 3"
                                     value={formData.durationInDays}
-                                    onChange={(e) => handleChange("durationInDays", e.target.value)}
-                                />
+                                    onChange={(e) => {
+                                        const value=e.target.value;
+                                        if(/^\d*$/.test(value))
+                                        {
+                                            handleChange("durationInDays",value);
+                                        }
+
+                                    }}
+                                      error={errors.durationInDays}
+                                    />
    
                                 <div>
                                     <label className="block text-sm font-medium mb-2">

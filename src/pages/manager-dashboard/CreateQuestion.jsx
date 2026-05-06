@@ -1,469 +1,805 @@
 
+
+// import React, { useState, useEffect } from "react";
+// import Button from "../../components/ui/Button";
+// import Input from "../../components/ui/Input";
+// import Select from "../../components/ui/Select";
+// import Header from "../../components/ui/Header";
+// import { Trash2 } from "lucide-react";
+
+// import {
+//   createAssessmentforTest,
+//   getAllAssessmentsforTest,
+//   deleteAssessmentApiforTest,
+//   getDepartmentsWithSyllabus
+// } from "../../api_service";
+
+// function CreateQuestion() {
+
+//   const [departments, setDepartments] = useState([]);
+//   const [syllabus, setSyllabus] = useState([]);
+//   const [selectedSyllabus, setSelectedSyllabus] = useState([]);
+
+//   const [title, setTitle] = useState("");
+//   const [time, setTime] = useState("");
+//   const [department, setDepartment] = useState([]);
+
+//   const [section, setSection] = useState("");
+//   const [globalType, setGlobalType] = useState("MCQ");
+
+//   const [uploadedAssessments, setUploadedAssessments] = useState([]);
+//   const [previewData, setPreviewData] = useState(null);
+
+//   const [questions, setQuestions] = useState([
+//     {
+//       question: "",
+//       type: "MCQ",
+//       options: ["", "", "", ""],
+//       correctAnswer: ""
+//     }
+//   ]);
+
+//   useEffect(() => {
+//     fetchDepartments();
+//     fetchAssessments();
+//   }, []);
+
+//   const fetchDepartments = async () => {
+//     const res = await getDepartmentsWithSyllabus();
+//     setDepartments(res);
+
+//     const all = res.flatMap(d =>
+//       d.syllabus.map(s => ({
+//         label: `${d.departmentName} - ${s.title}`,
+//         value: s.id
+//       }))
+//     );
+
+//     setSyllabus([...new Map(all.map(i => [i.value, i])).values()]);
+//   };
+
+//   const fetchAssessments = async () => {
+//     const res = await getAllAssessmentsforTest();
+//     setUploadedAssessments(res);
+//   };
+
+//   /* ---------------- QUESTION ---------------- */
+
+//   const handleQuestionChange = (value, index) => {
+//     const updated = [...questions];
+//     updated[index].question = value;
+//     setQuestions(updated);
+//   };
+
+//   const handleOptionChange = (value, qIndex, optIndex) => {
+//     const updated = [...questions];
+//     updated[qIndex].options[optIndex] = value;
+//     setQuestions(updated);
+//   };
+
+//   const handleCorrectAnswer = (value, index) => {
+//     const updated = [...questions];
+//     updated[index].correctAnswer = value;
+//     setQuestions(updated);
+//   };
+
+//   const addQuestion = () => {
+//     let newQ = {
+//       question: "",
+//       type: globalType,
+//       options: globalType === "MCQ" ? ["", "", "", ""] : [],
+//       correctAnswer: ""
+//     };
+//     setQuestions([...questions, newQ]);
+//   };
+
+//   /* ---------------- SAVE ---------------- */
+
+//   const saveQuestions = async () => {
+//     const data = {
+//       departmentIds: department,
+//       syllabusIds: selectedSyllabus,
+//       title,
+//       time,
+//       section,
+//       questions
+//     };
+
+//     await createAssessmentforTest(data);
+//     alert("Saved!");
+//     fetchAssessments();
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-gray-100">
+//       <Header userName="User" userRole="manager" />
+
+//       {/* CENTER CONTAINER */}
+//       <div className="pt-24 px-10 flex justify-center">
+//         <div className="grid lg:grid-cols-2 gap-6 w-full max-w-6xl">
+
+//           {/* FORM CARD */}
+//           <div className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100 space-y-5">
+
+//             <h2 className="text-xl font-bold">Create Assessment</h2>
+
+//             {/* ROW 1 */}
+//             <div className="grid grid-cols-2 gap-4">
+//               <div>
+//                 <label className="text-sm">Title</label>
+//                 <Input placeholder="Enter title"
+//                   value={title}
+//                   onChange={(e) => setTitle(e.target.value)} />
+//               </div>
+
+//               <div>
+//                 <label className="text-sm">Time</label>
+//                 <Input type="number" placeholder="Minutes"
+//                   value={time}
+//                   onChange={(e) => setTime(e.target.value)} />
+//               </div>
+//             </div>
+
+//             {/* ROW 2 */}
+//             <div className="grid grid-cols-2 gap-4">
+//               <div>
+//                 <label className="text-sm">Department</label>
+//                 <Select multiple value={department}
+//                   onChange={setDepartment}
+//                   options={departments.map(d => ({
+//                     label: d.departmentName,
+//                     value: d.departmentId
+//                   }))} />
+//               </div>
+
+//               <div>
+//                 <label className="text-sm">Syllabus</label>
+//                 <Select multiple value={selectedSyllabus}
+//                   onChange={setSelectedSyllabus}
+//                   options={syllabus} />
+//               </div>
+//             </div>
+
+//             {/* ROW 3 */}
+//             <div className="grid grid-cols-2 gap-4">
+//               <Select label="Section" value={section}
+//                 onChange={setSection}
+//                 options={[
+//                   { label: "Quant", value: "Quant" },
+//                   { label: "Verbal", value: "Verbal" }
+//                 ]} />
+
+//               <Select label="Type" value={globalType}
+//                 onChange={setGlobalType}
+//                 options={[
+//                   { label: "MCQ", value: "MCQ" },
+//                   { label: "Text", value: "TEXT" },
+//                   { label: "Coding", value: "CODING" }
+//                 ]} />
+//             </div>
+
+//             {/* QUESTIONS */}
+//             {questions.map((q, index) => (
+//               <div key={index} className="bg-gray-50 p-4 rounded-xl">
+
+//                 <textarea
+//                   className="w-full border p-3 rounded-lg resize-none"
+//                   rows={3}
+//                   placeholder={`Question ${index + 1}`}
+//                   value={q.question}
+//                   onChange={(e) =>
+//                     handleQuestionChange(e.target.value, index)}
+//                 />
+
+//                 {/* MCQ */}
+//                 {globalType === "MCQ" && (
+//                   <div className="grid grid-cols-2 gap-3 mt-3">
+//                     {q.options.map((opt, i) => (
+//                       <div key={i} className="flex gap-2">
+//                         <input type="radio"
+//                           checked={q.correctAnswer === String(i)}
+//                           onChange={() =>
+//                             handleCorrectAnswer(String(i), index)}
+//                         />
+//                         <Input placeholder={`Option ${i + 1}`}
+//                           value={opt}
+//                           onChange={(e) =>
+//                             handleOptionChange(e.target.value, index, i)} />
+//                       </div>
+//                     ))}
+//                   </div>
+//                 )}
+
+//                 {/* TEXT / CODING */}
+//                 {globalType !== "MCQ" && (
+//                   <textarea
+//                     className="w-full border p-3 mt-3 rounded-lg"
+//                     placeholder="Answer"
+//                     value={q.correctAnswer}
+//                     onChange={(e) =>
+//                       handleCorrectAnswer(e.target.value, index)}
+//                   />
+//                 )}
+
+//               </div>
+//             ))}
+
+//             <div className="flex gap-3">
+//               <Button onClick={addQuestion}>+ Add</Button>
+//               <Button onClick={saveQuestions}>Save</Button>
+//             </div>
+
+//           </div>
+
+//           {/* RIGHT CARD */}
+//           <div className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100">
+
+//             <h2 className="font-bold mb-4">Assessments</h2>
+
+//             {uploadedAssessments.map((item, i) => (
+//               <div key={i} className="border p-4 rounded-xl mb-3">
+
+//                 <h3 className="font-semibold">{item.title}</h3>
+
+//                 <div className="flex gap-2 mt-3">
+
+//                   <Button
+//                     className="bg-blue-500 text-white hover:bg-blue-600"
+//                     onClick={() => setPreviewData(item)}
+//                   >
+//                     Preview
+//                   </Button>
+
+//                   <Button className="bg-green-500 text-white hover:bg-green-600">
+//                     Edit
+//                   </Button>
+
+//                   <Button
+//                     className="bg-red-500 text-white hover:bg-red-600 flex items-center gap-1"
+//                     onClick={() => deleteAssessmentApiforTest(item.id)}
+//                   >
+//                     <Trash2 size={16} />
+//                     Delete
+//                   </Button>
+
+//                 </div>
+
+//               </div>
+//             ))}
+
+//           </div>
+
+//         </div>
+//       </div>
+
+//       {/* PREVIEW MODAL */}
+//       {previewData && (
+//         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50">
+
+//           <div className="bg-white p-6 rounded-2xl w-[520px] max-h-[80vh] overflow-y-auto shadow-2xl">
+
+//             <h2 className="text-xl font-bold mb-4 text-blue-600">
+//               {previewData.title}
+//             </h2>
+
+//             {previewData.questions?.map((q, i) => (
+//               <div key={i} className="mb-4 p-3 bg-gray-50 rounded-lg">
+//                 <p className="font-medium">{q.question}</p>
+//               </div>
+//             ))}
+
+//             <Button
+//               className="mt-4 bg-gray-800 text-white"
+//               onClick={() => setPreviewData(null)}
+//             >
+//               Close
+//             </Button>
+
+//           </div>
+
+//         </div>
+//       )}
+
+//     </div>
+//   );
+// }
+
+// export default CreateQuestion;
+// Working
+
 import React, { useState, useEffect } from "react";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import Select from "../../components/ui/Select";
+import Header from "../../components/ui/Header";
+import { Trash2 } from "lucide-react";
 
 import {
-createAssessmentforTest,
-getAllAssessmentsforTest,
-updateAssessmentforTest,
-deleteAssessmentApiforTest,
-fetchAllDepartments
+  createAssessmentforTest,
+  getAllAssessmentsforTest,
+  deleteAssessmentApiforTest,
+  getDepartmentsWithSyllabus
 } from "../../api_service";
-
-import Header from "../../components/ui/Header";
-import { useNavigate } from "react-router-dom";
 
 function CreateQuestion() {
 
-const navigate = useNavigate();
+  const [departments, setDepartments] = useState([]);
+  const [syllabus, setSyllabus] = useState([]);
 
-const [departments,setDepartments] = useState([]);
-const [title,setTitle] = useState("");
-const [time,setTime] = useState("");
-const [department,setDepartment] = useState([]);
-const [isDeptDropdownOpen,setIsDeptDropdownOpen] = useState(false);
+  const [selectedSyllabus, setSelectedSyllabus] = useState([]);
+  const [department, setDepartment] = useState([]);
 
-const [uploadedAssessments,setUploadedAssessments] = useState([]);
-const [editIndex,setEditIndex] = useState(null);
-const [previewAssessment,setPreviewAssessment] = useState(null);
-const [errors, setErrors] = useState({});
+  const [title, setTitle] = useState("");
+  const [errors, setErrors] = useState({});
 
-const [questions,setQuestions] = useState([
-{
-question:"",
-type:"MCQ",
-options:["","","",""],
-correctAnswer:"",
-testCases:[{input:"",output:""}]
-}
-]);
+  const [uploadedAssessments, setUploadedAssessments] = useState([]);
+  const [previewData, setPreviewData] = useState(null);
 
-/* ---------------- FETCH DATA ---------------- */
+  const [sections, setSections] = useState([
+    {
+      sectionName: "",
+      time: "",
+      type: "MCQ",
+      questions: [
+        {
+          question: "",
+          options: ["", "", "", ""],
+          correctAnswer: ""
+        }
+      ]
+    }
+  ]);
 
-useEffect(()=>{
+  useEffect(() => {
+    fetchDepartments();
+    fetchAssessments();
+  }, []);
 
-const fetchDepartments = async()=>{
-try{
-const res = await fetchAllDepartments();
-console.log("Response",res);
-setDepartments(res);
-}catch(err){
-console.log(err);
-}
+  const fetchDepartments = async () => {
+    const res = await getDepartmentsWithSyllabus();
+    setDepartments(res);
+  };
+
+
+const removeQuestion = (sIndex, qIndex) => {
+  const updated = [...sections];
+
+  // agar sirf 1 question hai to remove mat hone do (optional safety)
+  if (updated[sIndex].questions.length === 1) return;
+
+  updated[sIndex].questions.splice(qIndex, 1);
+  setSections(updated);
 };
 
-const fetchAssessments = async()=>{
-try{
-const res = await getAllAssessmentsforTest();
-setUploadedAssessments(res);
-}catch(err){
-console.log(err);
-}
+const removeSection = (sIndex) => {
+  if (sections.length === 1) return; // optional safety
+
+  const updated = sections.filter((_, i) => i !== sIndex);
+  setSections(updated);
 };
 
-fetchDepartments();
-fetchAssessments();
 
-},[]);
+  const fetchAssessments = async () => {
+    const res = await getAllAssessmentsforTest();
+    setUploadedAssessments(res);
+  };
 
-/* ---------------- HANDLERS ---------------- */
+  useEffect(() => {
+    if (department.length === 0) {
+      setSyllabus([]);
+      return;
+    }
 
-const handleQuestionChange=(value,index)=>{
-const updated=[...questions];
-updated[index].question=value;
-setQuestions(updated);
+    const filtered = departments
+      .filter(d => department.includes(d.departmentId))
+      .flatMap(d =>
+        d.syllabus
+          .filter(s => s.assigned)
+          .map(s => ({
+            label: `${d.departmentName} - ${s.title}`,
+            value: s.id
+          }))
+      );
+
+    setSyllabus(filtered);
+  }, [department, departments]);
+
+  /* ---------------- VALIDATION ---------------- */
+
+  const validateForm = () => {
+    let newErrors = {};
+
+    if (!title) newErrors.title = "Title is required";
+    if (department.length === 0) newErrors.department = "Select department";
+    if (selectedSyllabus.length === 0) newErrors.syllabus = "Select syllabus";
+
+    sections.forEach((sec, sIndex) => {
+      if (!sec.sectionName)
+        newErrors[`sectionName-${sIndex}`] = "Select section";
+
+      if (!sec.time)
+        newErrors[`time-${sIndex}`] = "Enter time";
+
+      sec.questions.forEach((q, qIndex) => {
+        if (!q.question)
+          newErrors[`question-${sIndex}-${qIndex}`] = "Enter question";
+
+        if (sec.type === "MCQ") {
+          q.options.forEach((opt, i) => {
+            if (!opt)
+              newErrors[`option-${sIndex}-${qIndex}-${i}`] = "Required";
+          });
+
+          if (q.correctAnswer === "")
+            newErrors[`correct-${sIndex}-${qIndex}`] = "Select answer";
+        } else {
+          if (!q.correctAnswer)
+            newErrors[`answer-${sIndex}-${qIndex}`] = "Enter answer";
+        }
+      });
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  /* ---------------- SECTION ---------------- */
+
+  const addSection = () => {
+    setSections([
+      ...sections,
+      {
+        sectionName: "",
+        time: "",
+        type: "MCQ",
+        questions: [
+          {
+            question: "",
+            options: ["", "", "", ""],
+            correctAnswer: ""
+          }
+        ]
+      }
+    ]);
+  };
+
+  const updateSectionField = (index, field, value) => {
+    const updated = [...sections];
+    updated[index][field] = value;
+    setSections(updated);
+  };
+
+  /* ---------------- QUESTIONS ---------------- */
+
+  const addQuestion = (sectionIndex) => {
+    const updated = [...sections];
+    updated[sectionIndex].questions.push({
+      question: "",
+      options: updated[sectionIndex].type === "MCQ" ? ["", "", "", ""] : [],
+      correctAnswer: ""
+    });
+    setSections(updated);
+  };
+
+  const handleQuestionChange = (value, sIndex, qIndex) => {
+    const updated = [...sections];
+    updated[sIndex].questions[qIndex].question = value;
+    setSections(updated);
+  };
+
+  const handleOptionChange = (value, sIndex, qIndex, optIndex) => {
+    const updated = [...sections];
+    updated[sIndex].questions[qIndex].options[optIndex] = value;
+    setSections(updated);
+  };
+
+  const handleCorrectAnswer = (value, sIndex, qIndex) => {
+    const updated = [...sections];
+    updated[sIndex].questions[qIndex].correctAnswer = value;
+    setSections(updated);
+  };
+
+  /* ---------------- SAVE ---------------- */
+
+  // const saveQuestions = async () => {
+  //   if (!validateForm()) return;
+
+  //   const data = {
+  //     departmentIds: department,
+  //     syllabusIds: selectedSyllabus,
+  //     title,
+  //     sections
+  //   };
+
+  //   await createAssessmentforTest(data);
+  //   alert("Saved Successfully!");
+  //   fetchAssessments();
+  // };
+
+
+  const saveQuestions = async () => {
+  if (!validateForm()) return;
+
+  const data = {
+    departmentIds: department,
+    syllabusIds: selectedSyllabus,
+    title,
+    sections
+  };
+
+  console.log("FINAL DATA 👉", data);
+
+  // local preview ke liye add karo
+  setUploadedAssessments(prev => [...prev, data]);
+
+  alert("Saved Locally ✅");
 };
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <Header userName="User" userRole="manager" />
 
-const handleTypeChange=(value,index)=>{
-const updated=[...questions];
+      <div className="pt-24 px-10 flex justify-center">
+        <div className="grid lg:grid-cols-2 gap-6 w-full max-w-6xl">
 
-updated[index].type=value;
+          {/* LEFT CARD */}
+          <div className="bg-white p-6 rounded-3xl shadow-xl space-y-6 h-[80vh] overflow-y-auto">
 
-if(value==="MCQ"){
-updated[index].options=["","","",""];
-updated[index].correctAnswer="";
-}
+            <h2 className="text-xl font-bold">Create Assessment</h2>
 
-if(value==="TEXT"){
-updated[index].correctAnswer="";
-updated[index].options=[];
-updated[index].testCases=[];
-}
+            {/* TITLE */}
+            <div>
+              <label className="font-semibold">Assessment Title</label>
+              <Input value={title} placeholder="Enter Title" onChange={(e) => setTitle(e.target.value)} />
+              {errors.title && <p className="text-red-500 text-xs">{errors.title}</p>}
+            </div>
 
-if(value==="CODING"){
-updated[index].testCases=[{input:"",output:""}];
-updated[index].correctAnswer="";
-updated[index].options=[];
-}
+            {/* DEPARTMENT */}
+            <div>
+              <label className="font-semibold">Department</label>
+              <Select multiple value={department} onChange={setDepartment}
+                options={departments.map(d => ({
+                  label: d.departmentName,
+                  value: d.departmentId
+                }))}
+              />
+              {errors.department && <p className="text-red-500 text-xs">{errors.department}</p>}
+            </div>
 
-setQuestions(updated);
-};
+            {/* SYLLABUS */}
+            <div>
+              <label className="font-semibold">Syllabus</label>
+              <Select multiple value={selectedSyllabus} onChange={setSelectedSyllabus} options={syllabus} />
+              {errors.syllabus && <p className="text-red-500 text-xs">{errors.syllabus}</p>}
+            </div>
 
-const handleOptionChange=(value,qIndex,optIndex)=>{
-const updated=[...questions];
-updated[qIndex].options[optIndex]=value;
-setQuestions(updated);
-};
+            {/* SECTIONS */}
+            {sections.map((sec, sIndex) => (
+              //<div key={sIndex} className="border p-4 rounded-xl space-y-3">
+<div key={sIndex} className="border p-4 rounded-xl space-y-3 relative">
 
-const handleCorrectAnswer=(value,index)=>{
-const updated=[...questions];
-updated[index].correctAnswer=value;
-setQuestions(updated);
-};
 
-const addQuestion=()=>{
-setQuestions([
-...questions,
-{
-question:"",
-type:"MCQ",
-options:["","","",""],
-correctAnswer:"",
-testCases:[{input:"",output:""}]
-}
-]);
-};
+  {/* ❌ DELETE SECTION */}
+  <Trash2
+    className="absolute top-2 right-2 text-red-600 cursor-pointer"
+    size={20}
+    onClick={() => removeSection(sIndex)}
+  />
+                <div className="grid grid-cols-3 gap-3">
 
-const removeQuestion=(index)=>{
-const updated=[...questions];
-updated.splice(index,1);
-setQuestions(updated);
-};
+                  <div>
+                    <label className="font-semibold text-sm">Section</label>
+                    <Select
+                      value={sec.sectionName}
+                      onChange={(val) =>
+                        updateSectionField(sIndex, "sectionName", val)
+                      }
+                      options={[
+                        { label: "Maths", value: "Maths" },
+                        { label: "English", value: "English" },
+                        { label: "Reasoning", value: "Reasoning" },
+                        { label: "Coding", value: "Coding" }
+                      ]}
+                    />
+                  </div>
 
-/* ---------------- TEST CASE ---------------- */
+                  <div>
+                    <label className="font-semibold text-sm">Time (min)</label>
+                    <Input
+                      type="number"
+                      value={sec.time}
+                      onChange={(e) =>
+                        updateSectionField(sIndex, "time", e.target.value)
+                      }
+                    />
+                  </div>
 
-const addTestCase=(qIndex)=>{
-const updated=[...questions];
-updated[qIndex].testCases.push({input:"",output:""});
-setQuestions(updated);
-};
+                  <div>
+                    <label className="font-semibold text-sm">Type</label>
+                    <Select
+                      value={sec.type}
+                      onChange={(val) =>
+                        updateSectionField(sIndex, "type", val)
+                      }
+                      options={[
+                        { label: "MCQ", value: "MCQ" },
+                        { label: "Text", value: "TEXT" },
+                        { label: "Coding", value: "CODING" }
+                      ]}
+                    />
+                  </div>
+                </div>
 
-const handleTestCaseChange=(value,qIndex,tcIndex,field)=>{
-const updated=[...questions];
-updated[qIndex].testCases[tcIndex][field]=value;
-setQuestions(updated);
-};
+                {sec.questions.map((q, qIndex) => (
+                  //<div key={qIndex} className="bg-gray-50 p-3 rounded space-y-2">
+                  <div key={qIndex} className="bg-gray-50 p-3 rounded space-y-2 relative">
 
-/* ---------------- VALIDATION ---------------- */
+  {/* ❌ DELETE QUESTION */}
+  <Trash2
+    className="absolute top-2 right-2 text-red-500 cursor-pointer"
+    size={18}
+    onClick={() => removeQuestion(sIndex, qIndex)}
+  />
 
-const validateForm = () => {
-let newErrors = {};
+                    <label className="font-semibold">Question</label>
+                    {/* <textarea
+                      className="w-full border p-2 rounded"
+                      value={q.question}
+                       onChange={(e) =>
+                        handleQuestionChange(e.target.value, sIndex, qIndex)
+                      }
+                    /> */}
+                    <textarea
+  className="w-full border p-2 rounded resize-none overflow-hidden"
+  rows={1}
+  value={q.question}
+  onChange={(e) => {
+    handleQuestionChange(e.target.value, sIndex, qIndex);
 
-if (department.length === 0) newErrors.department = "Select at least one department";
-if (!title.trim()) newErrors.title = "Title is required";
-if (!time || time <= 0) newErrors.time = "Enter valid time";
+    e.target.style.height = "auto";
+    e.target.style.height = e.target.scrollHeight + "px";
+  }}
+/>  
+                    {/* OPTIONS */}
+                      {sec.type === "MCQ" && (
+                      <>
+                        <label className="font-semibold text-sm">Options</label>
+                       <div className="grid grid-cols-2 gap-3">
+  {q.options.map((opt, i) => (   
+    <div key={i} className="flex gap-2 items-center">
+                            <input
+                              type="radio"
+                              checked={q.correctAnswer === String(i)}
+                              onChange={() =>
+                                handleCorrectAnswer(String(i), sIndex, qIndex)
+                              }
+                            />
+                            <Input
+                              placeholder={`Option ${i + 1}`}
+                              value={opt}
+                              onChange={(e) =>
+                                handleOptionChange(e.target.value, sIndex, qIndex, i)
+                              }
+                            />
+                          </div>
+                        ))}
+                        </div>
+                      </>
+                    )}
 
-questions.forEach((q, i) => {
+                    {/* TEXT */}
+{sec.type === "TEXT" && (
+  <>
+    <label className="font-semibold text-sm">Answer</label>
+    <textarea
+      className="w-full border p-2 rounded resize-none overflow-hidden"
+      rows={2}
+      value={q.correctAnswer}
+      onChange={(e) => {
+        handleCorrectAnswer(e.target.value, sIndex, qIndex);
 
-if (!q.question.trim()) newErrors[`question_${i}`] = "Question required";
-
-if (q.type === "MCQ") {
-q.options.forEach((opt, j) => {
-if (!opt.trim()) newErrors[`option_${i}_${j}`] = "Option required";
-});
-if (q.correctAnswer === "") newErrors[`correct_${i}`] = "Select correct answer";
-}
-
-if (q.type === "TEXT") {
-if (!q.correctAnswer.trim()) newErrors[`text_${i}`] = "Answer required";
-}
-
-if (q.type === "CODING") {
-q.testCases.forEach((tc, j) => {
-if (!tc.input.trim()) newErrors[`input_${i}_${j}`] = "Input required";
-if (!tc.output.trim()) newErrors[`output_${i}_${j}`] = "Output required";
-});
-}
-
-});
-
-setErrors(newErrors);
-return Object.keys(newErrors).length === 0;
-};
-
-/* ---------------- SAVE ---------------- */
-
-const saveQuestions = async () => {
-
-if (!validateForm()) return;
-
-const data = {
-departmentIds: department,
-title,
-time,
-questions
-};
-
-try{
-
-if(editIndex !== null){
-await updateAssessmentforTest(uploadedAssessments[editIndex].id,data);
-}else{
-await createAssessmentforTest(data);
-}
-
-alert("Assessment Saved Successfully");
-
-const res = await getAllAssessmentsforTest();
-setUploadedAssessments(res);
-
-}catch(err){
-console.log(err);
-alert("Error saving assessment");
-}
-
-};
-
-/* ---------------- DELETE ---------------- */
-
-const deleteAssessment = async (index) => {
-
-if(!window.confirm("Delete this assessment?")) return;
-
-try{
-const id = uploadedAssessments[index].id;
-await deleteAssessmentApiforTest(id);
-
-const res = await getAllAssessmentsforTest();
-setUploadedAssessments(res);
-
-}catch(err){
-console.log(err);
-}
-
-};
-
-/* ---------------- EDIT ---------------- */
-
-const editAssessment=(assessment,index)=>{
-setTitle(assessment.title);
-setTime(assessment.time);
-setDepartment(assessment.departmentIds);
-setQuestions(assessment.questions);
-setEditIndex(index);
-};
-
-/* ---------------- PREVIEW ---------------- */
-
-const preview=(assessment)=>{
-setPreviewAssessment(assessment);
-};
-
-/* ---------------- UI ---------------- */
-
-return(
-
-<div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-
-<Header
-userName={sessionStorage.getItem("userName") || "User"}
-userRole="manager"
-/>
-
-<div className="pt-24 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-{/* LEFT PANEL */}
-
-<div className="lg:col-span-2 bg-white rounded-3xl shadow-lg p-6">
-
-<h2 className="text-2xl font-bold text-gray-800">Create Assessment</h2>
-
-{/* DEPARTMENT */}
-
-<div className="mt-6 relative">
-<label className="text-gray-600">Department</label>
-
-<div
-onClick={()=>setIsDeptDropdownOpen(!isDeptDropdownOpen)}
-className="mt-2 border rounded-xl px-4 py-3 flex justify-between cursor-pointer hover:border-blue-400"
->
-<span>{department.length>0 ? `${department.length} selected` : "Select Department"}</span>
-<span>▼</span>
-</div>
-
-{isDeptDropdownOpen &&(
-<div className="absolute w-full bg-white border rounded-xl mt-2 shadow max-h-52 overflow-y-auto">
-
-{departments.map((dept)=>(
-<label key={dept.id} className="flex gap-2 p-2 hover:bg-blue-50">
-<input
-type="checkbox"
-checked={department.includes(dept.id)}
-onChange={(e)=>{
-if(e.target.checked){
-setDepartment([...department,dept.id])
-}else{
-setDepartment(department.filter(id=>id!==dept.id))
-}
-}}
-/>
-{dept.name}
-</label>
-))}
-
-</div>
+        e.target.style.height = "auto";
+        e.target.style.height = e.target.scrollHeight + "px";
+      }}
+    />
+  </>
 )}
 
-</div>
-
-{/* TITLE */}
-
-<input
-placeholder="Assessment Title"
-value={title}
-onChange={(e)=>setTitle(e.target.value)}
-className="w-full mt-6 p-3 border rounded-xl focus:ring-2 focus:ring-blue-400"
-/>
-
-{/* TIME */}
-
-<input
-type="number"
-placeholder="Time (minutes)"
-value={time}
-onChange={(e)=>setTime(e.target.value)}
-className="w-full mt-4 p-3 border rounded-xl focus:ring-2 focus:ring-blue-400"
-/>
-
-{/* QUESTIONS */}
-
-{questions.map((q,index)=>(
-
-<div key={index} className="mt-6 bg-blue-50 p-5 rounded-2xl">
-
-<input
-value={q.question}
-onChange={(e)=>handleQuestionChange(e.target.value,index)}
-placeholder={`Question ${index+1}`}
-className="w-full p-2 border rounded"
-/>
-
-<select
-value={q.type}
-onChange={(e)=>handleTypeChange(e.target.value,index)}
-className="mt-3 p-2 border rounded"
->
-<option value="MCQ">MCQ</option>
-<option value="TEXT">Text</option>
-<option value="CODING">Coding</option>
-</select>
-
-{q.type==="MCQ" && q.options.map((opt,i)=>(
-<div key={i} className="flex gap-2 mt-2">
-<input type="radio" checked={q.correctAnswer===String(i)}
-onChange={()=>handleCorrectAnswer(String(i),index)}
-/>
-<input value={opt}
-onChange={(e)=>handleOptionChange(e.target.value,index,i)}
-className="flex-1 p-2 border rounded"
-/>
-</div>
-))}
-
-{q.type==="TEXT" &&(
-<input
-value={q.correctAnswer}
-onChange={(e)=>handleCorrectAnswer(e.target.value,index)}
-placeholder="Correct Answer"
-className="w-full mt-2 p-2 border rounded"
-/>
+{/* CODING */}
+{sec.type === "CODING" && (
+  <>
+    <label className="font-semibold text-sm">Code Answer</label>
+    <textarea
+      className="w-full p-3 rounded bg-black text-green-400 font-mono text-sm resize-none overflow-auto"
+      rows={6}
+      value={q.correctAnswer}
+      onChange={(e) =>
+        handleCorrectAnswer(e.target.value, sIndex, qIndex)
+      }
+      placeholder="// Write your code here..."
+    />
+  </>
 )}
 
-{q.type==="CODING" &&(
-<div>
-{q.testCases.map((tc,tcIndex)=>(
-<div key={tcIndex} className="mt-2">
-<textarea
-value={tc.input}
-onChange={(e)=>handleTestCaseChange(e.target.value,index,tcIndex,"input")}
-className="w-full p-2 border rounded"
-/>
-<textarea
-value={tc.output}
-onChange={(e)=>handleTestCaseChange(e.target.value,index,tcIndex,"output")}
-className="w-full p-2 border rounded mt-1"
-/>
-</div>
-))}
-<button onClick={()=>addTestCase(index)} className="mt-2 text-blue-600">
-+ Add Test Case
-</button>
-</div>
-)}
+                  </div>
+                ))}
 
-<button onClick={()=>removeQuestion(index)} className="mt-3 text-red-500">
-Remove Question
-</button>
+                <Button onClick={() => addQuestion(sIndex)}>+ Add Question</Button>
+              </div>
+            ))}
 
-</div>
+            <div className="flex gap-3">
+              <Button onClick={addSection}>+ Add Section</Button>
+              <Button onClick={saveQuestions}>Save</Button>
+            </div>
 
-))}
+          </div>
 
-<div className="mt-6 flex gap-3">
-<button onClick={addQuestion} className="bg-blue-500 text-white px-4 py-2 rounded-xl">
-+ Add Question
-</button>
+          {/* RIGHT CARD */}
+          <div className="bg-white p-6 rounded-3xl shadow-xl h-[80vh] overflow-y-auto">
 
-<button onClick={saveQuestions} className="bg-green-500 text-white px-4 py-2 rounded-xl">
-Save
-</button>
-</div>
+            <h2 className="font-bold mb-4">Assessments</h2>
 
-</div>
+            {uploadedAssessments.map((item, i) => (
+              <div key={i} className="border p-4 rounded-xl mb-3">
 
-{/* RIGHT PANEL */}
+                <div className="flex justify-between">
+                  <h3>{item.title}</h3>
+                  <Trash2
+                    className="text-red-500 cursor-pointer"
+                    onClick={() => deleteAssessmentApiforTest(item.id)}
+                  />
+                </div>
 
-<div className="bg-white rounded-3xl shadow-lg p-5">
+                <div className="flex gap-3 mt-3">
+                  <Button className="bg-blue-500 text-white"
+                    onClick={() => setPreviewData(item)}>
+                    Preview
+                  </Button>
 
-<h3 className="font-semibold mb-4">Uploaded</h3>
+                  <Button className="bg-green-500 text-white">
+                    Edit
+                  </Button>
+                </div>
 
-{uploadedAssessments.map((a,index)=>(
-<div key={index} className="border p-3 rounded-xl mb-3">
+              </div>
+            ))}
 
-<strong>{a.title}</strong>
+          </div>
 
-<p className="text-sm">Time: {a.time}</p>
+        </div>
+      </div>
 
-<div className="flex gap-2 mt-2">
-<button onClick={()=>preview(a)} className="text-blue-600">Preview</button>
-<button onClick={()=>editAssessment(a,index)} className="text-green-600">Edit</button>
-<button onClick={()=>deleteAssessment(index)} className="text-red-500">Delete</button>
-</div>
+      {/* ✅ PREVIEW MODAL FIX */}
+      {previewData && (
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
 
-</div>
-))}
+          <div className="bg-white p-6 rounded-xl w-[600px] max-h-[80vh] overflow-y-auto">
 
-</div>
+            <h2 className="text-xl font-bold mb-4">{previewData.title}</h2>
 
-</div>
+            {previewData.sections?.map((sec, i) => (
+              <div key={i} className="mb-4">
+                <h3 className="font-semibold text-blue-600">
+                  {sec.sectionName} (Time: {sec.time} min)
+                </h3>
 
-{/* PREVIEW */}
+                {sec.questions?.map((q, j) => (
+                  <p key={j}>{j + 1}. {q.question}</p>
+                ))}
+              </div>
+            ))}
 
-{previewAssessment &&(
-<div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
+            <div className="flex justify-end">
+              <Button onClick={() => setPreviewData(null)}>Close</Button>
+            </div>
 
-<div className="bg-white p-6 rounded-xl w-[600px] max-h-[80vh] overflow-y-auto">
+          </div>
 
-<h2>{previewAssessment.title}</h2>
-<p>Time: {previewAssessment.time}</p>
+        </div>
+      )}
 
-{previewAssessment.questions.map((q,i)=>(
-<div key={i} className="mt-3">
-<b>Q{i+1}. {q.question}</b>
-</div>
-))}
-
-<button onClick={()=>setPreviewAssessment(null)} className="mt-4 bg-gray-200 px-4 py-2 rounded">
-Close
-</button>
-
-</div>
-
-</div>
-)}
-
-</div>
-);
-
+    </div>
+  );
 }
 
 export default CreateQuestion;

@@ -1155,3 +1155,15 @@ export const submitAssessment = async (assessmentId, payload) => {
     throw error;
   }
 };
+
+export const getDepartmentsWithSyllabus = async () => {
+  try {
+    const response = await axios.get(
+      `${API_URL}/departments/with-syllabus`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching departments with syllabus:", error);
+    throw error;
+  }
+};

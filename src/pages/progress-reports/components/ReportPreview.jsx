@@ -80,7 +80,7 @@ const ReportPreview = ({ reportData, filters, onExport, isExporting }) => {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      'Completed': { color: 'bg-success text-success-foreground', icon: 'CheckCircle' },
+      'Completed': { color: 'bg-success text-black', icon: 'CheckCircle' },
       'Scheduled': { color: 'bg-warning text-warning-foreground', icon: 'Calendar' },
       'Pending': { color: 'bg-muted text-muted-foreground', icon: 'Clock' },
       'Cancelled': { color: 'bg-error text-error-foreground', icon: 'XCircle' }

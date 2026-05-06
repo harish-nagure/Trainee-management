@@ -3447,3 +3447,1954 @@
 //         System.out.println("⏱ Checking deadlines... " + LocalDateTime.now());
 //         checkSyllabusDeadlines();
 //     }
+
+
+     <main className="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <NavigationBreadcrumb className="mb-6" />
+
+        <h1 className="text-2xl font-bold mb-6 text-blue-700">
+          Assign Departments
+        </h1>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          <div className="bg-white p-5 rounded-2xl shadow-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-semibold text-lg">Trainees</h2>
+
+
+              {!privilegeRoles.includes(roleName) && (   //  CEO ko hide kar diya
+                <Button
+                  onClick={() => {
+                    resetForm();
+                    setNewTrainee(prev => ({ ...prev, managerId: managerId }));
+                    setIsDeptDropdownOpen(false);
+                    setShowAddModal(true);
+                  }}
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  + Add
+                </Button>
+              )}
+            </div>
+
+            {trainees?.map((t) => (
+              <div
+                key={t.traineeId}
+                onClick={() => selectTrainee(t)}
+                className={`p-3 mb-2 rounded-xl cursor-pointer transition flex justify-between items-center
+                    ${selectedTrainee?.traineeId === t.traineeId
+                    ? "bg-blue-600 text-white"
+                    : "hover:bg-blue-100"
+                  }`}
+              >
+                <span>{t.name}</span>
+
+                {/* ICONS */}
+                {!isRestricted && (
+                  <div className="flex gap-3 text-lg">
+                    <FiEdit
+                      className="cursor-pointer hover:text-yellow-500"
+                      onClick={(e) => handleEdit(t, e)}
+                    />
+                    <FiTrash2
+                      className="cursor-pointer hover:text-red-500"
+                      onClick={(e) => handleDelete(t.traineeId, e)}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+
+          {/* Department Section */}
+          <div className="md:col-span-2 bg-white p-6 rounded-2xl shadow-md">
+
+            {!selectedTrainee ? (
+              <p className="text-gray-500">
+                Please select a trainee from left side.
+              </p>
+            ) : (
+              <>
+                <h2 className="font-semibold mb-4 text-lg text-blue-700">
+                  Assign Departments to {selectedTrainee.name}
+                </h2>
+
+                {/* Select All Buttons */}
+                <div className="flex gap-3 mb-4">
+                  <Button
+                    onClick={handleSelectAll}
+                    className="bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  >
+                    Select All
+                  </Button>
+
+                  <Button
+                    onClick={handleUnselectAll}
+                    className="bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  >
+                    Unselect All
+                  </Button>
+                </div>
+
+                {/* Checkbox Grid */}
+                {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    {departments.map((dept) => (
+                      <label
+                        key={dept.id}
+                        className="flex items-center gap-3 p-3 border rounded-xl cursor-pointer hover:bg-blue-50"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedDeptIds.includes(dept.id)}
+                          onChange={() => handleCheckboxChange(dept.id)}
+                          className="w-4 h-4 accent-blue-600"
+                        />
+                        <span>{dept.name}</span>
+                      </label>
+                    ))}
+                  </div> */}
+
+                {/* Custom Multi Select Dropdown */}
+                <div className="relative mb-4">
+                  <div
+                    //onClick={() => setIsEditMode(!isEditMode)}
+                    // onClick={() => setIsDeptDropdownOpen(!isDeptDropdownOpen)}
+                    onClick={() => {
+                      if (!isRestricted) {
+                        setIsDeptDropdownOpen(!isDeptDropdownOpen);
+                      }
+                    }}
+
+                    className="w-full border-2 border-gray-300 rounded-xl p-3 bg-white cursor-pointer flex justify-between items-center hover:border-blue-500 transition"
+                  >
+                    <span className="text-gray-700">
+                      {selectedDeptIds.length > 0
+                        ? `${selectedDeptIds.length} department(s) selected`
+                        : "Select Departments"}
+                    </span>
+                    <span className="text-gray-500 text-sm">▼</span>
+                  </div>
+
+                  {isDeptDropdownOpen && (
+
+                    <div className="absolute z-20 mt-2 w-full bg-white border rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                      {departments?.map((dept) => (
+                        <label
+                          key={dept.id}
+                          className="flex items-center gap-3 px-4 py-2 hover:bg-blue-50 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            disabled={isRestricted}
+                            checked={selectedDeptIds.includes(dept.id)}
+                            onChange={() => handleCheckboxChange(dept.id)}
+                            className="w-4 h-4 accent-blue-600"
+                          />
+                          <span>{dept.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Selected Departments Preview */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {selectedDeptIds.map((id) => {
+                    const dept = departments.find((d) => d.id === id);
+                    return (
+                      <div
+                        key={id}
+                        className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                      >
+                        {dept?.name}
+                        {!isRestricted && (
+                          <button
+                            onClick={() =>
+                              setSelectedDeptIds(selectedDeptIds.filter((d) => d !== id))
+                            }
+                            className="text-red-500 font-bold"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+
+                {/* Save Button */}
+                {!isRestricted && (
+                  <Button
+                    onClick={handleAssign}
+                    disabled={!hasChanges || loading}
+                    className={`text-white ${!hasChanges
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-blue-600 hover:bg-blue-700"
+                      }`}
+                  >
+                    {loading ? "Saving..." : "Save Changes"}
+                  </Button>
+                )}
+
+                {/* Success Message */}
+                {successMsg && (
+                  <div className="mt-4 text-blue-600 font-medium">
+                    {successMsg}
+                  </div>
+                )}
+
+                {/* Assigned Departments */}
+                <div className="mt-6">
+                  <h3 className="font-semibold mb-2">Currently Assigned</h3>
+
+                  {assignedDepartments.length === 0 ? (
+                    <p className="text-gray-500">No departments assigned.</p>
+                  ) : (
+                    assignedDepartments.map((d) => (
+                      <div
+                        key={d.id}
+                        className="bg-blue-100 text-blue-800 px-3 py-2 rounded-lg mb-2"
+                      >
+                        {d.name}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
+
+          </div>
+        </div>
+      </main>
+
+         {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+          <div className="bg-white w-96 p-6 rounded-2xl shadow-xl">
+            <h2 className="text-xl font-bold mb-4 text-blue-700">
+              Add New Trainee
+            </h2>
+
+            <div className="flex flex-col gap-3">
+              <input
+                name="trngid"
+                placeholder="Trainee ID"
+                value={newTrainee.trngid}
+                onChange={handleNewTraineeChange}
+               className="border border-gray-300 p-2 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+           {errors.trngid && (
+  <p className="text-red-500 text-sm">{errors.trngid}</p>
+)}
+              <input
+                name="firstname"
+                placeholder="First Name"
+                value={newTrainee.firstname}
+                onChange={handleNewTraineeChange}
+               className="border border-gray-300 p-2 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+              {errors.firstname && (
+  <p className="text-red-500 text-sm">{errors.firstname}</p>
+)}
+              <input
+                name="lastname"
+                placeholder="Last Name"
+                value={newTrainee.lastname}
+                onChange={handleNewTraineeChange}
+                className="border border-gray-300 p-2 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+              {errors.lastname && (
+  <p className="text-red-500 text-sm">{errors.lastname}</p>
+)}
+              <input
+                name="username"
+                placeholder="Username"
+                value={newTrainee.username}
+                onChange={handleNewTraineeChange}
+                className="border border-gray-300 p-2 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+              {errors.username && (
+  <p className="text-red-500 text-sm">{errors.username}</p>
+)}
+              <input
+                name="emailid"
+                placeholder="Email"
+                value={newTrainee.emailid}
+                onChange={handleNewTraineeChange}
+                className="border border-gray-300 p-2 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+               {errors.emailid && (
+  <p className="text-red-500 text-sm">{errors.emailid}</p>
+)}
+              <input
+                name="phonenumber"
+                placeholder="Phone Number"
+                value={newTrainee.phonenumber}
+                onChange={handleNewTraineeChange}
+                className="border border-gray-300 p-2 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+               {errors.phonenumber && (
+  <p className="text-red-500 text-sm">{errors.phonenumber}</p>
+)}
+              <input
+                name="managerId"
+                placeholder="Manager ID"
+                value={newTrainee.managerId}
+                readOnly
+                className="border p-2 rounded bg-gray-100"
+              />
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={newTrainee.password}
+                onChange={handleNewTraineeChange}
+                className="border border-gray-300 p-2 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+ {errors.password && (
+  <p className="text-red-500 text-sm">{errors.password}</p>
+)}
+
+              <input
+                name="designation"
+                placeholder="Designation"
+                value={newTrainee.designation}
+                onChange={handleNewTraineeChange}
+                className="border border-gray-300 p-2 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+               {errors.designation && (
+  <p className="text-red-500 text-sm">{errors.designation}</p>
+)}
+
+              <select
+                name="roleId"
+                value={newTrainee.roleId}
+                onChange={handleNewTraineeChange}
+               className="border border-gray-300 p-2 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none"
+              >
+                <option value="">Select Role</option>
+                {roles?.map((role) => (
+                  <option key={role.roleId} value={role.roleId}>
+                    {role.roleName}
+                  </option>
+                ))}
+              </select>
+
+            </div>
+
+            <div className="flex justify-end gap-3 mt-5">
+              <Button
+                onClick={() => {
+                  resetForm();
+                  setShowAddModal(false);
+                }}
+
+
+                className="bg-gray-400 text-white"
+              >
+                Cancel
+              </Button>
+             
+              <Button
+
+                onClick={handleSaveTrainee}
+                className="bg-blue-600 text-white hover:bg-blue-700"
+              >
+                {isEditMode ? "Update" : "Save"}
+              </Button>
+
+            </div>
+          </div>
+        </div>
+      )}
+
+
+
+      import React, { useState, useEffect } from "react";
+
+import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
+import Select from '../../components/ui/Select';
+
+import {
+  createAssessmentforTest,
+  getAllAssessmentsforTest,
+  updateAssessmentforTest,
+  deleteAssessmentApiforTest,
+  fetchAllDepartments
+} from "../../api_service";
+
+import Header from "../../components/ui/Header";
+
+function CreateQuestion() {
+
+  const [departments,setDepartments] = useState([]);
+  const [title,setTitle] = useState("");
+  const [time,setTime] = useState("");
+  const [department,setDepartment] = useState([]); // array
+
+  const [section,setSection] = useState("");
+  const [globalType,setGlobalType] = useState("MCQ");
+
+  const [uploadedAssessments,setUploadedAssessments] = useState([]);
+  const [editIndex,setEditIndex] = useState(null);
+
+  const [questions,setQuestions] = useState([
+    {
+      question:"",
+      type:"MCQ",
+      options:["","","",""],
+      correctAnswer:"",
+      testCases:[]
+    }
+  ]);
+
+  /* ---------------- FETCH ---------------- */
+
+  useEffect(()=>{
+    fetchDepartments();
+    fetchAssessments();
+  },[]);
+
+  const fetchDepartments = async()=>{
+    try{
+      const res = await fetchAllDepartments();
+      setDepartments(res);
+    }catch(err){
+      console.log(err);
+    }
+  };
+
+  const fetchAssessments = async()=>{
+    try{
+      const res = await getAllAssessmentsforTest();
+      setUploadedAssessments(res);
+    }catch(err){
+      console.log(err);
+    }
+  };
+
+  /* ---------------- GLOBAL TYPE ---------------- */
+
+  const handleGlobalTypeChange = (value) => {
+
+    setGlobalType(value);
+
+    const updated = questions.map(()=>{
+
+      if(value==="MCQ"){
+        return {
+          question:"",
+          type:"MCQ",
+          options:["","","",""],
+          correctAnswer:"",
+          testCases:[]
+        };
+      }
+
+      if(value==="TEXT"){
+        return {
+          question:"",
+          type:"TEXT",
+          options:[],
+          correctAnswer:"",
+          testCases:[]
+        };
+      }
+
+      if(value==="CODING"){
+        return {
+          question:"",
+          type:"CODING",
+          options:[],
+          correctAnswer:"",
+          testCases:[{input:"",output:""}]
+        };
+      }
+
+      return {};
+    });
+
+    setQuestions(updated);
+  };
+
+  /* ---------------- HANDLERS ---------------- */
+
+  const handleDepartmentChange = (value) => {
+    // value will be array
+    setDepartment(value);
+  };
+
+  const handleQuestionChange=(value,index)=>{
+    const updated=[...questions];
+    updated[index].question=value;
+    setQuestions(updated);
+  };
+
+  const handleOptionChange=(value,qIndex,optIndex)=>{
+    const updated=[...questions];
+    updated[qIndex].options[optIndex]=value;
+    setQuestions(updated);
+  };
+
+  const handleCorrectAnswer=(value,index)=>{
+    const updated=[...questions];
+    updated[index].correctAnswer=value;
+    setQuestions(updated);
+  };
+
+  const addQuestion=()=>{
+
+    let newQ = {
+      question:"",
+      type:globalType,
+      options:[],
+      correctAnswer:"",
+      testCases:[]
+    };
+
+    if(globalType==="MCQ"){
+      newQ.options=["","","",""];
+    }
+
+    if(globalType==="CODING"){
+      newQ.testCases=[{input:"",output:""}];
+    }
+
+    setQuestions([...questions,newQ]);
+  };
+
+  const removeQuestion=(index)=>{
+    const updated=[...questions];
+    updated.splice(index,1);
+    setQuestions(updated);
+  };
+
+  /* ---------------- TEST CASE ---------------- */
+
+  const addTestCase=(qIndex)=>{
+    const updated=[...questions];
+    updated[qIndex].testCases.push({input:"",output:""});
+    setQuestions(updated);
+  };
+
+  const handleTestCaseChange=(value,qIndex,tcIndex,field)=>{
+    const updated=[...questions];
+    updated[qIndex].testCases[tcIndex][field]=value;
+    setQuestions(updated);
+  };
+
+  /* ---------------- SAVE ---------------- */
+
+  const saveQuestions = async () => {
+
+    const data = {
+      departmentIds: department, // already array ✅
+      title,
+      time,
+      section,
+      questions
+    };
+
+    try{
+      if(editIndex !== null){
+        await updateAssessmentforTest(uploadedAssessments[editIndex].id,data);
+      }else{
+        await createAssessmentforTest(data);
+      }
+
+      alert("Saved Successfully");
+      fetchAssessments();
+
+    }catch(err){
+      console.log(err);
+    }
+  };
+
+  /* ---------------- DELETE ---------------- */
+
+  const deleteAssessment = async (index) => {
+
+    if(!window.confirm("Delete this assessment?")) return;
+
+    try{
+      const id = uploadedAssessments[index].id;
+      await deleteAssessmentApiforTest(id);
+      fetchAssessments();
+    }catch(err){
+      console.log(err);
+    }
+  };
+
+  /* ---------------- UI ---------------- */
+
+  return(
+
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+
+      <Header userName="User" userRole="manager"/>
+
+      <div className="pt-24 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* LEFT */}
+        <div className="lg:col-span-2 bg-white rounded-3xl shadow-lg p-6">
+
+          <h2 className="text-2xl font-bold">Create Assessment</h2>
+
+          {/* TITLE + TIME */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            <Input label="Title" value={title} onChange={(e)=>setTitle(e.target.value)} />
+            <Input type="number" label="Time (minutes)" value={time} onChange={(e)=>setTime(e.target.value)} />
+          </div>
+
+          {/* ✅ MULTIPLE DEPARTMENT SELECT */}
+          <div className="mt-4">
+            <Select
+              label="Select Department"
+              value={department}
+              onChange={handleDepartmentChange}
+              multiple={true}   // ✅ IMPORTANT
+              options={departments.map(d => ({
+                label: d.name,
+                value: d.id
+              }))}
+            />
+          </div>
+
+          {/* SECTION + TYPE */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            
+            <Select
+              label="Select Section"
+              value={section}
+              onChange={(value)=>setSection(value)}
+              options={[
+                {label:"Quantitative",value:"Quantitative"},
+                {label:"Verbal",value:"Verbal"},
+                {label:"Coding",value:"Coding"},
+                {label:"Qualitative",value:"Qualitative"}
+              ]}
+            />
+
+            <Select
+              label="Select Question Type"
+              value={globalType}
+              onChange={(value)=>handleGlobalTypeChange(value)}
+              options={[
+                {label:"MCQ",value:"MCQ"},
+                {label:"Text",value:"TEXT"},
+                {label:"Coding",value:"CODING"}
+              ]}
+            />
+
+          </div>
+
+          {/* QUESTIONS */}
+          {questions.map((q,index)=>(
+
+            <div key={index} className="mt-6 bg-blue-50 p-6 rounded-2xl">
+
+              <Input
+                value={q.question}
+                onChange={(e)=>handleQuestionChange(e.target.value,index)}
+                placeholder={`Question ${index+1}`}
+              />
+
+              {/* MCQ */}
+              {globalType==="MCQ" && q.options.map((opt,i)=>(
+                <div key={i} className="flex gap-3 mt-3 items-center">
+                  <input
+                    type="radio"
+                    checked={q.correctAnswer===String(i)}
+                    onChange={()=>handleCorrectAnswer(String(i),index)}
+                  />
+                  <Input
+                    value={opt}
+                    onChange={(e)=>handleOptionChange(e.target.value,index,i)}
+                  />
+                </div>
+              ))}
+
+              {/* TEXT */}
+              {globalType==="TEXT" &&(
+                <Input
+                  className="mt-3"
+                  value={q.correctAnswer}
+                  onChange={(e)=>handleCorrectAnswer(e.target.value,index)}
+                  placeholder="Correct Answer"
+                />
+              )}
+
+              {/* CODING */}
+              {globalType==="CODING" &&(
+                <div className="mt-3">
+                  {q.testCases.map((tc,tcIndex)=>(
+                    <div key={tcIndex} className="grid grid-cols-2 gap-4 mt-2">
+                      <Input
+                        placeholder="Input"
+                        value={tc.input}
+                        onChange={(e)=>handleTestCaseChange(e.target.value,index,tcIndex,"input")}
+                      />
+                      <Input
+                        placeholder="Output"
+                        value={tc.output}
+                        onChange={(e)=>handleTestCaseChange(e.target.value,index,tcIndex,"output")}
+                      />
+                    </div>
+                  ))}
+                  <Button className="mt-3" onClick={()=>addTestCase(index)}>
+                    + Add Test Case
+                  </Button>
+                </div>
+              )}
+
+              <Button
+                onClick={()=>removeQuestion(index)}
+                className="mt-4 bg-red-500 text-white"
+              >
+                Remove
+              </Button>
+
+            </div>
+
+          ))}
+
+          <div className="mt-6 flex gap-4">
+            <Button onClick={addQuestion}>+ Add Question</Button>
+            <Button onClick={saveQuestions}>Save</Button>
+          </div>
+
+        </div>
+
+        {/* RIGHT PANEL */}
+        <div className="bg-white rounded-3xl shadow-lg p-5">
+
+          <h3>Uploaded</h3>
+
+          {uploadedAssessments.map((a,index)=>(
+
+            <div key={index} className="border p-3 rounded-xl mt-3">
+
+              <strong>{a.title}</strong>
+              <p>Time: {a.time}</p>
+
+              <div className="flex gap-2 mt-2">
+
+                <Button className="bg-blue-500 text-white">Preview</Button>
+                <Button className="bg-green-500 text-white">Edit</Button>
+                <Button onClick={()=>deleteAssessment(index)} className="bg-red-500 text-white">
+                  Delete
+                </Button>
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      </div>
+
+    </div>
+
+  );
+}
+
+export default CreateQuestion;
+
+
+// import React, { useState, useEffect } from "react";
+
+// import {
+// createAssessmentforTest,
+// getAllAssessmentsforTest,
+// updateAssessmentforTest,
+// deleteAssessmentApiforTest,
+// fetchAllDepartments
+// } from "../../api_service";
+
+// import Header from "../../components/ui/Header";
+// import { useNavigate } from "react-router-dom";
+
+// function CreateQuestion() {
+
+// const navigate = useNavigate();
+
+// const [departments,setDepartments] = useState([]);
+// const [title,setTitle] = useState("");
+// const [time,setTime] = useState("");
+// const [department,setDepartment] = useState([]);
+// const [isDeptDropdownOpen,setIsDeptDropdownOpen] = useState(false);
+
+// const [uploadedAssessments,setUploadedAssessments] = useState([]);
+// const [editIndex,setEditIndex] = useState(null);
+// const [previewAssessment,setPreviewAssessment] = useState(null);
+// const [syllabusList, setSyllabusList] = useState([]);
+// const [selectedSyllabus, setSelectedSyllabus] = useState("");
+// const [errors, setErrors] = useState({});
+
+// const [questions,setQuestions] = useState([
+// {
+// question:"",
+// type:"MCQ",
+// options:["","","",""],
+// correctAnswer:"",
+// testCases:[{input:"",output:""}]
+// }
+// ]);
+
+// /* ---------------- FETCH DATA ---------------- */
+
+// useEffect(()=>{
+
+// const fetchDepartments = async()=>{
+// try{
+// const res = await fetchAllDepartments();
+// console.log("Response",res);
+// setDepartments(res);
+// }catch(err){
+// console.log(err);
+// }
+// };
+
+// const fetchAssessments = async()=>{
+// try{
+// const res = await getAllAssessmentsforTest();
+// setUploadedAssessments(res);
+// }catch(err){
+// console.log(err);
+// }
+// };
+
+// fetchDepartments();
+// fetchAssessments();
+ 
+// },[]);
+
+// /* ---------------- HANDLERS ---------------- */
+
+// const handleQuestionChange=(value,index)=>{
+// const updated=[...questions];
+// updated[index].question=value;
+// setQuestions(updated);
+// };
+
+// const handleTypeChange=(value,index)=>{
+// const updated=[...questions];
+
+// updated[index].type=value;
+
+// if(value==="MCQ"){
+// updated[index].options=["","","",""];
+// updated[index].correctAnswer="";
+// }
+
+// if(value==="TEXT"){
+// updated[index].correctAnswer="";
+// updated[index].options=[];
+// updated[index].testCases=[];
+// }
+
+// if(value==="CODING"){
+// updated[index].testCases=[{input:"",output:""}];
+// updated[index].correctAnswer="";
+// updated[index].options=[];
+// }
+
+// setQuestions(updated);
+// };
+
+// const handleOptionChange=(value,qIndex,optIndex)=>{
+// const updated=[...questions];
+// updated[qIndex].options[optIndex]=value;
+// setQuestions(updated);
+// };
+
+// const handleCorrectAnswer=(value,index)=>{
+// const updated=[...questions];
+// updated[index].correctAnswer=value;
+// setQuestions(updated);
+// };
+
+// const addQuestion=()=>{
+// setQuestions([
+// ...questions,
+// {
+// question:"",
+// type:"MCQ",
+// options:["","","",""],
+// correctAnswer:"",
+// testCases:[{input:"",output:""}]
+// }
+// ]);
+// };
+
+// const removeQuestion=(index)=>{
+// const updated=[...questions];
+// updated.splice(index,1);
+// setQuestions(updated);
+// };
+
+// /* ---------------- TEST CASE ---------------- */
+
+// const addTestCase=(qIndex)=>{
+// const updated=[...questions];
+// updated[qIndex].testCases.push({input:"",output:""});
+// setQuestions(updated);
+// };
+
+// const handleTestCaseChange=(value,qIndex,tcIndex,field)=>{
+// const updated=[...questions];
+// updated[qIndex].testCases[tcIndex][field]=value;
+// setQuestions(updated);
+// };
+
+// /* ---------------- VALIDATION ---------------- */
+
+// const validateForm = () => {
+// let newErrors = {};
+
+// if (department.length === 0) newErrors.department = "Select at least one department";
+// if (!title.trim()) newErrors.title = "Title is required";
+// if (!time || time <= 0) newErrors.time = "Enter valid time";
+
+// questions.forEach((q, i) => {
+
+// if (!q.question.trim()) newErrors[`question_${i}`] = "Question required";
+
+// if (q.type === "MCQ") {
+// q.options.forEach((opt, j) => {
+// if (!opt.trim()) newErrors[`option_${i}_${j}`] = "Option required";
+// });
+// if (q.correctAnswer === "") newErrors[`correct_${i}`] = "Select correct answer";
+// }
+
+// if (q.type === "TEXT") {
+// if (!q.correctAnswer.trim()) newErrors[`text_${i}`] = "Answer required";
+// }
+
+// if (q.type === "CODING") {
+// q.testCases.forEach((tc, j) => {
+// if (!tc.input.trim()) newErrors[`input_${i}_${j}`] = "Input required";
+// if (!tc.output.trim()) newErrors[`output_${i}_${j}`] = "Output required";
+// });
+// }
+
+// });
+
+// setErrors(newErrors);
+// return Object.keys(newErrors).length === 0;
+// };
+
+// /* ---------------- SAVE ---------------- */
+
+// const saveQuestions = async () => {
+
+// if (!validateForm()) return;
+
+// const data = {
+// departmentIds: department,
+// title,
+// time,
+// questions
+// };
+
+// try{
+
+// if(editIndex !== null){
+// await updateAssessmentforTest(uploadedAssessments[editIndex].id,data);
+// }else{
+// await createAssessmentforTest(data);
+// }
+
+// alert("Assessment Saved Successfully");
+
+// const res = await getAllAssessmentsforTest();
+// setUploadedAssessments(res);
+
+// }catch(err){
+// console.log(err);
+// alert("Error saving assessment");
+// }
+
+// };
+
+// /* ---------------- DELETE ---------------- */
+
+// const deleteAssessment = async (index) => {
+
+// if(!window.confirm("Delete this assessment?")) return;
+
+// try{
+// const id = uploadedAssessments[index].id;
+// await deleteAssessmentApiforTest(id);
+
+// const res = await getAllAssessmentsforTest();
+// setUploadedAssessments(res);
+
+// }catch(err){
+// console.log(err);
+// }
+
+// };
+
+// /* ---------------- EDIT ---------------- */
+
+// const editAssessment=(assessment,index)=>{
+// setTitle(assessment.title);
+// setTime(assessment.time);
+// setDepartment(assessment.departmentIds);
+// setQuestions(assessment.questions);
+// setEditIndex(index);
+// };
+
+// /* ---------------- PREVIEW ---------------- */
+
+// const preview=(assessment)=>{
+// setPreviewAssessment(assessment);
+// };
+
+// /* ---------------- UI ---------------- */
+
+// return(
+
+// <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+
+// <Header
+// userName={sessionStorage.getItem("userName") || "User"}
+// userRole="manager"
+// />
+
+// <div className="pt-24 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+// {/* LEFT PANEL */}
+
+// <div className="lg:col-span-2 bg-white rounded-3xl shadow-lg p-6">
+
+// <h2 className="text-2xl font-bold text-gray-800">Create Assessment</h2>
+
+// {/* DEPARTMENT */}
+
+// <div className="mt-6 relative">
+// <label className="text-gray-600">Department</label>
+
+// <div
+// onClick={()=>setIsDeptDropdownOpen(!isDeptDropdownOpen)}
+// className="mt-2 border rounded-xl px-4 py-3 flex justify-between cursor-pointer hover:border-blue-400"
+// >
+// <span>{department.length>0 ? `${department.length} selected` : "Select Department"}</span>
+// <span>▼</span>
+// </div>
+
+// {isDeptDropdownOpen &&(
+// <div className="absolute w-full bg-white border rounded-xl mt-2 shadow max-h-52 overflow-y-auto">
+
+// {departments.map((dept)=>(
+// <label key={dept.id} className="flex gap-2 p-2 hover:bg-blue-50">
+// <input
+// type="checkbox"
+// checked={department.includes(dept.id)}
+// onChange={(e)=>{
+// if(e.target.checked){
+// setDepartment([...department,dept.id])
+// }else{
+// setDepartment(department.filter(id=>id!==dept.id))
+// }
+// }}
+// />
+// {dept.name}
+// </label>
+// ))}
+
+// </div>
+// )}
+
+// </div>
+
+// {/* SYLLABUS SELECT */}
+
+
+
+// {/* TITLE */}
+
+// <input
+// placeholder="Assessment Title"
+// value={title}
+// onChange={(e)=>setTitle(e.target.value)}
+// className="w-full mt-6 p-3 border rounded-xl focus:ring-2 focus:ring-blue-400"
+// />
+
+// {/* TIME */}
+
+// <input
+// type="number"
+// placeholder="Time (minutes)"
+// value={time}
+// onChange={(e)=>setTime(e.target.value)}
+// className="w-full mt-4 p-3 border rounded-xl focus:ring-2 focus:ring-blue-400"
+// />
+
+// {/* QUESTIONS */}
+
+// {questions.map((q,index)=>(
+
+// <div key={index} className="mt-6 bg-blue-50 p-5 rounded-2xl">
+
+// <input
+// value={q.question}
+// onChange={(e)=>handleQuestionChange(e.target.value,index)}
+// placeholder={`Question ${index+1}`}
+// className="w-full p-2 border rounded"
+// />
+
+// <select
+// value={q.type}
+// onChange={(e)=>handleTypeChange(e.target.value,index)}
+// className="mt-3 p-2 border rounded"
+// >
+// <option value="MCQ">MCQ</option>
+// <option value="TEXT">Text</option>
+// <option value="CODING">Coding</option>
+// </select>
+
+// {q.type==="MCQ" && q.options.map((opt,i)=>(
+// <div key={i} className="flex gap-2 mt-2">
+// <input type="radio" checked={q.correctAnswer===String(i)}
+// onChange={()=>handleCorrectAnswer(String(i),index)}
+// />
+// <input value={opt}
+// onChange={(e)=>handleOptionChange(e.target.value,index,i)}
+// className="flex-1 p-2 border rounded"
+// />
+// </div>
+// ))}
+
+// {q.type==="TEXT" &&(
+// <input
+// value={q.correctAnswer}
+// onChange={(e)=>handleCorrectAnswer(e.target.value,index)}
+// placeholder="Correct Answer"
+// className="w-full mt-2 p-2 border rounded"
+// />
+// )}
+
+// {q.type==="CODING" &&(
+// <div>
+// {q.testCases.map((tc,tcIndex)=>(
+// <div key={tcIndex} className="mt-2">
+// <textarea
+// value={tc.input}
+// onChange={(e)=>handleTestCaseChange(e.target.value,index,tcIndex,"input")}
+// className="w-full p-2 border rounded"
+// />
+// <textarea
+// value={tc.output}
+// onChange={(e)=>handleTestCaseChange(e.target.value,index,tcIndex,"output")}
+// className="w-full p-2 border rounded mt-1"
+// />
+// </div>
+// ))}
+// <button onClick={()=>addTestCase(index)} className="mt-2 text-blue-600">
+// + Add Test Case
+// </button>
+// </div>
+// )}
+
+// <button onClick={()=>removeQuestion(index)} className="mt-3 text-red-500">
+// Remove Question
+// </button>
+
+// </div>
+
+// ))}
+
+// <div className="mt-6 flex gap-3">
+// <button onClick={addQuestion} className="bg-blue-500 text-white px-4 py-2 rounded-xl">
+// + Add Question
+// </button>
+
+// <button onClick={saveQuestions} className="bg-green-500 text-white px-4 py-2 rounded-xl">
+// Save
+// </button>
+// </div>
+
+// </div>
+
+// {/* RIGHT PANEL */}
+
+// <div className="bg-white rounded-3xl shadow-lg p-5">
+
+// <h3 className="font-semibold mb-4">Uploaded</h3>
+
+// {uploadedAssessments.map((a,index)=>(
+// <div key={index} className="border p-3 rounded-xl mb-3">
+
+// <strong>{a.title}</strong>
+
+// <p className="text-sm">Time: {a.time}</p>
+
+// <div className="flex gap-2 mt-2">
+// <button onClick={()=>preview(a)} className="text-blue-600">Preview</button>
+// <button onClick={()=>editAssessment(a,index)} className="text-green-600">Edit</button>
+// <button onClick={()=>deleteAssessment(index)} className="text-red-500">Delete</button>
+// </div>
+
+// </div>
+// ))}
+
+// </div>
+
+// </div>
+
+// {/* PREVIEW */}
+
+// {previewAssessment &&(
+// <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
+
+// <div className="bg-white p-6 rounded-xl w-[600px] max-h-[80vh] overflow-y-auto">
+
+// <h2>{previewAssessment.title}</h2>
+// <p>Time: {previewAssessment.time}</p>
+
+// {previewAssessment.questions.map((q,i)=>(
+// <div key={i} className="mt-3">
+// <b>Q{i+1}. {q.question}</b>
+// </div>
+// ))}
+
+// <button onClick={()=>setPreviewAssessment(null)} className="mt-4 bg-gray-200 px-4 py-2 rounded">
+// Close
+// </button>
+
+// </div>
+
+// </div>
+// )}
+
+// </div>
+// );
+
+// }
+
+// export default CreateQuestion;
+
+
+
+// import React, { useState, useEffect } from "react";
+// import Button from "../../components/ui/Button";
+// import Input from "../../components/ui/Input";
+// import Select from "../../components/ui/Select";
+// import Header from "../../components/ui/Header";
+// import { Trash2 } from "lucide-react";
+
+// import {
+//   createAssessmentforTest,
+//   getAllAssessmentsforTest,
+//   deleteAssessmentApiforTest,
+//   getDepartmentsWithSyllabus
+// } from "../../api_service";
+
+// function CreateQuestion() {
+
+//   const [departments, setDepartments] = useState([]);
+//   const [syllabus, setSyllabus] = useState([]);
+
+//   const [selectedSyllabus, setSelectedSyllabus] = useState([]);
+//   const [department, setDepartment] = useState([]);
+
+//   const [title, setTitle] = useState("");
+//   const [errors, setErrors] = useState({});
+
+//   const [uploadedAssessments, setUploadedAssessments] = useState([]);
+//   const [previewData, setPreviewData] = useState(null);
+
+//   const [sections, setSections] = useState([
+//     {
+//       sectionName: "",
+//       time: "",
+//       type: "MCQ",
+//       questions: [
+//         {
+//           question: "",
+//           options: ["", "", "", ""],
+//           correctAnswer: ""
+//         }
+//       ]
+//     }
+//   ]);
+
+//   useEffect(() => {
+//     fetchDepartments();
+//     fetchAssessments();
+//   }, []);
+
+//   const fetchDepartments = async () => {
+//     const res = await getDepartmentsWithSyllabus();
+//     setDepartments(res);
+//   };
+
+//   const fetchAssessments = async () => {
+//     const res = await getAllAssessmentsforTest();
+//     setUploadedAssessments(res);
+//   };
+
+//   useEffect(() => {
+//     if (department.length === 0) {
+//       setSyllabus([]);
+//       return;
+//     }
+
+//     const filtered = departments
+//       .filter(d => department.includes(d.departmentId))
+//       .flatMap(d =>
+//         d.syllabus
+//           .filter(s => s.assigned)
+//           .map(s => ({
+//             label: `${d.departmentName} - ${s.title}`,
+//             value: s.id
+//           }))
+//       );
+
+//     setSyllabus(filtered);
+//   }, [department, departments]);
+
+//   /* ---------------- VALIDATION ---------------- */
+
+//   const validateForm = () => {
+//     let newErrors = {};
+
+//     if (!title) newErrors.title = "Title is required";
+//     if (department.length === 0) newErrors.department = "Select department";
+//     if (selectedSyllabus.length === 0) newErrors.syllabus = "Select syllabus";
+
+//     sections.forEach((sec, sIndex) => {
+//       if (!sec.sectionName)
+//         newErrors[`sectionName-${sIndex}`] = "Select section";
+
+//       if (!sec.time)
+//         newErrors[`time-${sIndex}`] = "Enter time";
+
+//       sec.questions.forEach((q, qIndex) => {
+//         if (!q.question)
+//           newErrors[`question-${sIndex}-${qIndex}`] = "Enter question";
+
+//         if (sec.type === "MCQ") {
+//           q.options.forEach((opt, i) => {
+//             if (!opt)
+//               newErrors[`option-${sIndex}-${qIndex}-${i}`] = "Required";
+//           });
+
+//           if (q.correctAnswer === "")
+//             newErrors[`correct-${sIndex}-${qIndex}`] = "Select answer";
+//         } else {
+//           if (!q.correctAnswer)
+//             newErrors[`answer-${sIndex}-${qIndex}`] = "Enter answer";
+//         }
+//       });
+//     });
+
+//     setErrors(newErrors);
+//     return Object.keys(newErrors).length === 0;
+//   };
+
+//   /* ---------------- SECTION ---------------- */
+
+//   const addSection = () => {
+//     setSections([
+//       ...sections,
+//       {
+//         sectionName: "",
+//         time: "",
+//         type: "MCQ",
+//         questions: [
+//           {
+//             question: "",
+//             options: ["", "", "", ""],
+//             correctAnswer: ""
+//           }
+//         ]
+//       }
+//     ]);
+//   };
+
+//   const updateSectionField = (index, field, value) => {
+//     const updated = [...sections];
+//     updated[index][field] = value;
+//     setSections(updated);
+//   };
+
+//   /* ---------------- QUESTIONS ---------------- */
+
+//   const addQuestion = (sectionIndex) => {
+//     const updated = [...sections];
+//     updated[sectionIndex].questions.push({
+//       question: "",
+//       options: updated[sectionIndex].type === "MCQ" ? ["", "", "", ""] : [],
+//       correctAnswer: ""
+//     });
+//     setSections(updated);
+//   };
+
+//   const handleQuestionChange = (value, sIndex, qIndex) => {
+//     const updated = [...sections];
+//     updated[sIndex].questions[qIndex].question = value;
+//     setSections(updated);
+//   };
+
+//   const handleOptionChange = (value, sIndex, qIndex, optIndex) => {
+//     const updated = [...sections];
+//     updated[sIndex].questions[qIndex].options[optIndex] = value;
+//     setSections(updated);
+//   };
+
+//   const handleCorrectAnswer = (value, sIndex, qIndex) => {
+//     const updated = [...sections];
+//     updated[sIndex].questions[qIndex].correctAnswer = value;
+//     setSections(updated);
+//   };
+
+//   /* ---------------- SAVE ---------------- */
+
+//   // const saveQuestions = async () => {
+//   //   if (!validateForm()) return;
+
+//   //   const data = {
+//   //     departmentIds: department,
+//   //     syllabusIds: selectedSyllabus,
+//   //     title,
+//   //     sections
+//   //   };
+
+//   //   await createAssessmentforTest(data);
+//   //   alert("Saved Successfully!");
+//   //   fetchAssessments();
+//   // };
+
+
+//   const saveQuestions = async () => {
+//   if (!validateForm()) return;
+
+//   const data = {
+//     departmentIds: department,
+//     syllabusIds: selectedSyllabus,
+//     title,
+//     sections
+//   };
+
+//   console.log("FINAL DATA 👉", data);
+
+//   // local preview ke liye add karo
+//   setUploadedAssessments(prev => [...prev, data]);
+
+//   alert("Saved Locally ✅");
+// };
+//   return (
+//     <div className="min-h-screen bg-gray-100">
+//       <Header userName="User" userRole="manager" />
+
+//       <div className="pt-24 px-10 flex justify-center">
+//         <div className="grid lg:grid-cols-2 gap-6 w-full max-w-6xl">
+
+//           {/* LEFT CARD */}
+//           <div className="bg-white p-6 rounded-3xl shadow-xl space-y-6 h-[80vh] overflow-y-auto">
+
+//             <h2 className="text-xl font-bold">Create Assessment</h2>
+
+//             {/* TITLE */}
+//             <div>
+//               <label className="font-semibold">Assessment Title</label>
+//               <Input value={title} placeholder="Enter Title" onChange={(e) => setTitle(e.target.value)} />
+//               {errors.title && <p className="text-red-500 text-xs">{errors.title}</p>}
+//             </div>
+
+//             {/* DEPARTMENT */}
+//             <div>
+//               <label className="font-semibold">Department</label>
+//               <Select multiple value={department} onChange={setDepartment}
+//                 options={departments.map(d => ({
+//                   label: d.departmentName,
+//                   value: d.departmentId
+//                 }))}
+//               />
+//               {errors.department && <p className="text-red-500 text-xs">{errors.department}</p>}
+//             </div>
+
+//             {/* SYLLABUS */}
+//             <div>
+//               <label className="font-semibold">Syllabus</label>
+//               <Select multiple value={selectedSyllabus} onChange={setSelectedSyllabus} options={syllabus} />
+//               {errors.syllabus && <p className="text-red-500 text-xs">{errors.syllabus}</p>}
+//             </div>
+
+//             {/* SECTIONS */}
+//             {sections.map((sec, sIndex) => (
+//               <div key={sIndex} className="border p-4 rounded-xl space-y-3">
+
+//                 <div className="grid grid-cols-3 gap-3">
+
+//                   <div>
+//                     <label className="font-semibold text-sm">Section</label>
+//                     <Select
+//                       value={sec.sectionName}
+//                       onChange={(val) =>
+//                         updateSectionField(sIndex, "sectionName", val)
+//                       }
+//                       options={[
+//                         { label: "Maths", value: "Maths" },
+//                         { label: "English", value: "English" },
+//                         { label: "Reasoning", value: "Reasoning" },
+//                         { label: "Coding", value: "Coding" }
+//                       ]}
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="font-semibold text-sm">Time (min)</label>
+//                     <Input
+//                       type="number"
+//                       value={sec.time}
+//                       onChange={(e) =>
+//                         updateSectionField(sIndex, "time", e.target.value)
+//                       }
+//                     />
+//                   </div>
+
+//                   <div>
+//                     <label className="font-semibold text-sm">Type</label>
+//                     <Select
+//                       value={sec.type}
+//                       onChange={(val) =>
+//                         updateSectionField(sIndex, "type", val)
+//                       }
+//                       options={[
+//                         { label: "MCQ", value: "MCQ" },
+//                         { label: "Text", value: "TEXT" },
+//                         { label: "Coding", value: "CODING" }
+//                       ]}
+//                     />
+//                   </div>
+//                 </div>
+
+//                 {sec.questions.map((q, qIndex) => (
+//                   <div key={qIndex} className="bg-gray-50 p-3 rounded space-y-2">
+
+//                     <label className="font-semibold">Question</label>
+//                     {/* <textarea
+//                       className="w-full border p-2 rounded"
+//                       value={q.question}
+//                        onChange={(e) =>
+//                         handleQuestionChange(e.target.value, sIndex, qIndex)
+//                       }
+//                     /> */}
+//                     <textarea
+//   className="w-full border p-2 rounded resize-none overflow-hidden"
+//   rows={1}
+//   value={q.question}
+//   onChange={(e) => {
+//     handleQuestionChange(e.target.value, sIndex, qIndex);
+
+//     e.target.style.height = "auto";
+//     e.target.style.height = e.target.scrollHeight + "px";
+//   }}
+// />  
+//                     {/* OPTIONS */}
+//                       {sec.type === "MCQ" && (
+//                       <>
+//                         <label className="font-semibold text-sm">Options</label>
+//                        <div className="grid grid-cols-2 gap-3">
+//   {q.options.map((opt, i) => (   
+//     <div key={i} className="flex gap-2 items-center">
+//                             <input
+//                               type="radio"
+//                               checked={q.correctAnswer === String(i)}
+//                               onChange={() =>
+//                                 handleCorrectAnswer(String(i), sIndex, qIndex)
+//                               }
+//                             />
+//                             <Input
+//                               placeholder={`Option ${i + 1}`}
+//                               value={opt}
+//                               onChange={(e) =>
+//                                 handleOptionChange(e.target.value, sIndex, qIndex, i)
+//                               }
+//                             />
+//                           </div>
+//                         ))}
+//                         </div>
+//                       </>
+//                     )}
+
+//                     {/* TEXT */}
+// {sec.type === "TEXT" && (
+//   <>
+//     <label className="font-semibold text-sm">Answer</label>
+//     <textarea
+//       className="w-full border p-2 rounded resize-none overflow-hidden"
+//       rows={2}
+//       value={q.correctAnswer}
+//       onChange={(e) => {
+//         handleCorrectAnswer(e.target.value, sIndex, qIndex);
+
+//         e.target.style.height = "auto";
+//         e.target.style.height = e.target.scrollHeight + "px";
+//       }}
+//     />
+//   </>
+// )}
+
+// {/* CODING */}
+// {sec.type === "CODING" && (
+//   <>
+//     <label className="font-semibold text-sm">Code Answer</label>
+//     <textarea
+//       className="w-full p-3 rounded bg-black text-green-400 font-mono text-sm resize-none overflow-auto"
+//       rows={6}
+//       value={q.correctAnswer}
+//       onChange={(e) =>
+//         handleCorrectAnswer(e.target.value, sIndex, qIndex)
+//       }
+//       placeholder="// Write your code here..."
+//     />
+//   </>
+// )}
+
+//                   </div>
+//                 ))}
+
+//                 <Button onClick={() => addQuestion(sIndex)}>+ Add Question</Button>
+//               </div>
+//             ))}
+
+//             <div className="flex gap-3">
+//               <Button onClick={addSection}>+ Add Section</Button>
+//               <Button onClick={saveQuestions}>Save</Button>
+//             </div>
+
+//           </div>
+
+//           {/* RIGHT CARD */}
+//           <div className="bg-white p-6 rounded-3xl shadow-xl h-[80vh] overflow-y-auto">
+
+//             <h2 className="font-bold mb-4">Assessments</h2>
+
+//             {uploadedAssessments.map((item, i) => (
+//               <div key={i} className="border p-4 rounded-xl mb-3">
+
+//                 <div className="flex justify-between">
+//                   <h3>{item.title}</h3>
+//                   <Trash2
+//                     className="text-red-500 cursor-pointer"
+//                     onClick={() => deleteAssessmentApiforTest(item.id)}
+//                   />
+//                 </div>
+
+//                 <div className="flex gap-3 mt-3">
+//                   <Button className="bg-blue-500 text-white"
+//                     onClick={() => setPreviewData(item)}>
+//                     Preview
+//                   </Button>
+
+//                   <Button className="bg-green-500 text-white">
+//                     Edit
+//                   </Button>
+//                 </div>
+
+//               </div>
+//             ))}
+
+//           </div>
+
+//         </div>
+//       </div>
+
+//       {/* ✅ PREVIEW MODAL FIX */}
+//       {previewData && (
+//         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+
+//           <div className="bg-white p-6 rounded-xl w-[600px] max-h-[80vh] overflow-y-auto">
+
+//             <h2 className="text-xl font-bold mb-4">{previewData.title}</h2>
+
+//             {previewData.sections?.map((sec, i) => (
+//               <div key={i} className="mb-4">
+//                 <h3 className="font-semibold text-blue-600">
+//                   {sec.sectionName} (Time: {sec.time} min)
+//                 </h3>
+
+//                 {sec.questions?.map((q, j) => (
+//                   <p key={j}>{j + 1}. {q.question}</p>
+//                 ))}
+//               </div>
+//             ))}
+
+//             <div className="flex justify-end">
+//               <Button onClick={() => setPreviewData(null)}>Close</Button>
+//             </div>
+
+//           </div>
+
+//         </div>
+//       )}
+
+//     </div>
+//   );
+// }
+
+// export default CreateQuestion;
+
+//21 April 2026 
+// import React, { useState } from 'react';
+// import { useLocation, useNavigate } from 'react-router-dom';
+// import Icon from '../AppIcon';
+// import Button from './Button';
+
+// const Header = ({ userRole = 'trainee', userName = 'User', onLogout }) => {
+//   const [isProfileOpen, setIsProfileOpen] = useState(false);
+//   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+//   const location = useLocation();
+//   const navigate = useNavigate();
+//   const roleName = sessionStorage.getItem("roleName") || "trainee";
+//   const lowerRole = roleName.toLowerCase();
+//   const privilegedRoles = ['ceo', 'cto', 'hr'];
+
+// const normalizedRole =
+//   privilegedRoles.includes(userRole?.toLowerCase())
+//     ? 'manager'
+//     : userRole?.toLowerCase();
+
+//   const navigationItems = [
+//     {
+//       label: 'Dashboard',
+//       path: userRole === 'manager' ? '/manager-dashboard' : '/trainee-dashboard',
+//       icon: 'LayoutDashboard',
+//       roles: ['trainee', 'manager']
+//     },
+//     {
+//       label: 'Learning',
+//       path: '/syllabus-content-viewer',
+//       icon: 'BookOpen',
+//       roles: ['trainee']
+//     },
+//     // {
+//     //   label: 'Progress',
+//     //   path: '/progress-reports',
+//     //   icon: 'TrendingUp',
+//     //   roles: ['trainee', 'manager']
+//     // },
+//     {
+//       label: 'Assessment',
+//       path: '/assessment-entry',
+//       icon: 'ClipboardCheck',
+//       roles: ['manager']
+//     },
+//     {
+//       label: 'Interviews',
+//       path: '/interview-scheduling',
+//       icon: 'Calendar',
+//       roles: ['manager']
+//     },
+//     {
+//       label: 'Syllabus',
+//       path: '/upload-syllabus',
+//       icon: 'BookOpen',
+//       roles: ['manager']
+//     },
+//     {
+//       label: 'Approval',
+//       path: '/trainee-steps',
+//       icon: 'BookOpen',
+//       roles: ['manager']
+//     },
+//     {
+//       label: 'Department',
+//       path: '/department',
+//       icon: 'Calendar',
+//       roles: ['manager']
+//     },
+//     {
+//       label: 'Assign Trainee',
+//       path: '/assign-trainee',
+//       icon: 'Calendar',
+//       roles: ['manager']
+//     },
+
+//   ];
+
+//   const visibleNavItems = navigationItems?.filter(item =>
+//     item?.roles?.includes(normalizedRole)
+//   )?.slice(0, 9);
+
+//   const moreItems = navigationItems?.filter(item =>
+//     item?.roles?.includes(normalizedRole)
+//   )?.slice(9);
+
+//   const handleNavigation = (path) => {
+//     navigate(path);
+//     setIsMobileMenuOpen(false);
+//   };
+
+//   const handleLogout = () => {
+//     setIsProfileOpen(false);
+//     if (onLogout) {
+//       onLogout();
+//     }
+//   };
+
+//   const isActivePath = (path) => {
+//     return location?.pathname === path;
+//   };
+
+//   return (
+//     <header className="fixed top-0 left-0 right-0 z-40 bg-surface border-b border-border">
+//       <div className="flex items-center justify-between h-16 px-6">
+//         {/* Logo Section */}
+//         <div className="flex items-center space-x-4">
+//           <div className="flex items-center space-x-3">
+//             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+//               <Icon name="GraduationCap" size={20} color="white" />
+//             </div>
+//             <div className="hidden sm:block">
+//               <h1 className="text-lg font-semibold text-foreground">TMS</h1>
+//               <p className="text-xs text-muted-foreground">Trainee Management</p>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Desktop Navigation */}
+//         <nav className="hidden lg:flex items-center space-x-1">
+//           {visibleNavItems?.map((item) => (
+//             <Button
+//               key={item?.path}
+//               variant={isActivePath(item?.path) ? "default" : "ghost"}
+//               size="sm"
+//               onClick={() => handleNavigation(item?.path)}
+//               iconName={item?.icon}
+//               iconPosition="left"
+//               iconSize={16}
+//               className="px-4"
+//             >
+//               {item?.label}
+//             </Button>
+//           ))}
+
+//           {moreItems?.length > 0 && (
+//             <div className="relative">
+//               <Button
+//                 variant="ghost"
+//                 size="sm"
+//                 iconName="MoreHorizontal"
+//                 iconPosition="left"
+//                 iconSize={16}
+//                 className="px-4"
+//               >
+//                 More
+//               </Button>
+//             </div>
+//           )}
+//         </nav>
+
+//         {/* User Profile & Mobile Menu */}
+//         <div className="flex items-center space-x-3">
+//           {/* Mobile Menu Button */}
+//           <Button
+//             variant="ghost"
+//             size="icon"
+//             className="lg:hidden"
+//             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+//             iconName={isMobileMenuOpen ? "X" : "Menu"}
+//             iconSize={20}
+//           >
+//           </Button>
+
+//           {/* User Profile Dropdown */}
+//           <div className="relative">
+//             <Button
+//               variant="ghost"
+//               size="sm"
+//               onClick={() => setIsProfileOpen(!isProfileOpen)}
+//               className="flex items-center space-x-2 px-3"
+//             >
+//               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+//                 <Icon name="User" size={16} color="white" />
+//               </div>
+//               <div className="hidden sm:block text-left">
+//                 <p className="text-sm font-medium text-foreground">{userName}</p>
+//                 <p className="text-xs text-muted-foreground capitalize">{userRole}</p>
+//               </div>
+//               <Icon name="ChevronDown" size={16} className="text-muted-foreground" />
+//             </Button>
+
+//             {/* Profile Dropdown Menu */}
+//             {isProfileOpen && (
+//               <div className="absolute right-0 mt-2 w-48 bg-popover border border-border rounded-lg elevation-2 z-50">
+//                 <div className="py-2">
+//                   <div className="px-4 py-2 border-b border-border">
+//                     <p className="text-sm font-medium text-foreground">{userName}</p>
+//                     <p className="text-xs text-muted-foreground capitalize">{userRole}</p>
+//                   </div>
+//                   <button
+//                     onClick={() => setIsProfileOpen(false)}
+//                     className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted transition-colors duration-150"
+//                   >
+//                     <Icon name="Settings" size={16} className="inline mr-2" />
+//                     Settings
+//                   </button>
+//                   <button
+//                     onClick={() => setIsProfileOpen(false)}
+//                     className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted transition-colors duration-150"
+//                   >
+//                     <Icon name="HelpCircle" size={16} className="inline mr-2" />
+//                     Help
+//                   </button>
+//                   <div className="border-t border-border mt-2 pt-2">
+//                     <button
+//                       onClick={handleLogout}
+//                       className="w-full px-4 py-2 text-left text-sm text-error hover:bg-muted transition-colors duration-150"
+//                     >
+//                       <Icon name="LogOut" size={16} className="inline mr-2" />
+//                       Sign Out
+//                     </button>
+//                   </div>
+//                 </div>
+//               </div>
+//             )}
+//           </div>
+//         </div>
+//       </div>
+//       {/* Mobile Navigation Menu */}
+//       {isMobileMenuOpen && (
+//         <div className="lg:hidden bg-surface border-t border-border">
+//           <nav className="px-6 py-4 space-y-2 bg-gray-100 rounded-xl m-2">
+//             {navigationItems?.filter(item => item?.roles?.includes(userRole))?.map((item) => (
+//               <Button
+//                 key={item?.path}
+//                 variant={isActivePath(item?.path) ? "default" : "ghost"}
+//                 size="sm"
+//                 onClick={() => handleNavigation(item?.path)}
+//                 iconName={item?.icon}
+//                 iconPosition="left"
+//                 iconSize={16}
+//                 fullWidth
+//                 className="justify-start"
+//               >
+//                 {item?.label}
+//               </Button>
+//             ))}
+//           </nav>
+//         </div>
+//       )}
+//       {/* Overlay for mobile menu */}
+//       {isMobileMenuOpen && (
+//         <div
+//           className="fixed z-10 bg-black bg-opacity-50 z-30 lg:hidden"
+//           onClick={() => setIsMobileMenuOpen(false)}
+//         />
+//       )}
+//     </header>
+//   );
+// };
+
+// export default Header;

@@ -34,11 +34,54 @@ const NavigationBreadcrumb = ({
       parent: '/manager-dashboard',
       roles: ['manager']
     },
+    '/': {
+      label: 'Approval',
+      parent: '/manager-dashboard',
+      roles: ['manager']
+    },
+    '/': {
+      label: 'Department',
+      parent: '/manager-dashboard',
+      roles: ['manager']
+    },
+    '/': {
+      label: 'Assign-Trainee',
+      parent: '/manager-dashboard',
+      roles: ['manager']
+    },
+    '/': {
+      label: 'Assessment Test',
+      parent: '/manager-dashboard',
+      roles: ['manager']
+    },
+    '/': {
+      label: 'Test Check',
+      parent: '/manager-dashboard',
+      roles: ['manager']
+    },
+    
+    '/': {
+      label: 'Trainee Report',
+      parent: '/manager-dashboard',
+      roles: ['manager']
+    },
+    
+    
+    
+    
+    
     '/syllabus-content-viewer': {
       label: 'Syllabus Content',
       parent: '/trainee-dashboard',
       roles: ['trainee']
     },
+'/': {
+      label: 'Test',
+      parent: '/trainee-dashboard',
+      roles: ['trainee']
+    },
+
+
     // '/progress-reports': {
     //   label: 'Progress Reports',
     //   parent: userRole === 'manager' ? '/manager-dashboard' : '/trainee-dashboard',
